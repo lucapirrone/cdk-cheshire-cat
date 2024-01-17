@@ -1,0 +1,126 @@
+import * as cm from 'aws-cdk-lib/aws-certificatemanager';
+import { ILoadBalancerV2 } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as route53targets from 'aws-cdk-lib/aws-route53-targets';
+import { Construct } from 'constructs';
+
+export interface CustomDomainOverrides {
+  readonly certificateProps?: cm.CertificateProps;
+  readonly hostedZoneProviderProps?: route53.HostedZoneProps;
+  readonly aRecordProps?: route53.ARecordProps;
+  readonly aaaaRecordProps?: route53.AaaaRecordProps;
+}
+
+export interface CustomDomainProps {
+  /**
+   * An easy to remember address of your website. Only supports domains hosted
+   * on [Route 53](https://aws.amazon.com/route53/). Used as `domainName` for
+   * ACM `Certificate` if {@link CustomDomainProps.certificate} and
+   * {@link CustomDomainProps.certificateDomainName} are `undefined`.
+   * @example "example.com"
+   */
+  readonly domainName: string;
+  /**
+   * You must create the hosted zone out-of-band.
+   * You can lookup the hosted zone outside this construct and pass it in via this prop.
+   * Alternatively if this prop is `undefined`, then the hosted zone will be
+   * **looked up** (not created) via `HostedZone.fromLookup` with {@link CustomDomainProps.domainName}.
+   */
+  readonly hostedZone?: route53.IHostedZone;
+  /**
+   * If this prop is `undefined` then an ACM `Certificate` will be created based on {@link CustomDomainProps.domainName}
+   * with DNS Validation. This prop allows you to control the TLS/SSL
+   * certificate created. The certificate you create must be in the `us-east-1`
+   * (N. Virginia) region as required by AWS CloudFront.
+   *
+   * Set this option if you have an existing certificate in the `us-east-1` region in AWS Certificate Manager you want to use.
+   */
+  readonly certificate?: cm.ICertificate;
+  /**
+   * The domain name used in this construct when creating an ACM `Certificate`. Useful
+   * when passing {@link CustomDomainProps.alternateNames} and you need to specify
+   * a wildcard domain like "*.example.com". If `undefined`, then {@link CustomDomainProps.domainName}
+   * will be used.
+   *
+   * If {@link CustomDomainProps.certificate} is passed, then this prop is ignored.
+   */
+  readonly certificateDomainName?: string;
+  /**
+   * Override props for every construct.
+   */
+  readonly overrides?: CustomDomainOverrides;
+}
+
+/**
+ * Use a custom domain with `ChershireCat`. Requires a Route53 hosted zone to have been
+ * created within the same AWS account.
+ *
+ * See {@link CustomDomainProps} TS Doc comments for detailed docs on how to customize.
+ * This construct is helpful to user to not have to worry about interdependencies
+ * between Route53 Hosted Zone, CloudFront Distribution, and Route53 Hosted Zone Records.
+ *
+ * Note, if you're using another service for domain name registration, you can
+ * still create a Route53 hosted zone. Please see [Configuring DNS Delegation from
+ * CloudFlare to AWS Route53](https://veducate.co.uk/dns-delegation-route53/)
+ * as an example.
+ */
+export class CustomDomain extends Construct {
+  /**
+   * Domain name.
+   */
+  public domainName: string;
+  /**
+   * Route53 Hosted Zone.
+   */
+  hostedZone: route53.IHostedZone;
+  /**
+   * ACM Certificate.
+   */
+  certificate: cm.ICertificate;
+
+  private props: CustomDomainProps;
+
+  constructor(scope: Construct, id: string, props: CustomDomainProps) {
+    super(scope, id);
+    this.props = props;
+    this.hostedZone = this.getHostedZone();
+    this.certificate = this.getCertificate();
+    this.domainName = this.props.domainName;
+  }
+
+  private getHostedZone(): route53.IHostedZone {
+    if (!this.props.hostedZone) {
+      return route53.HostedZone.fromLookup(this, 'HostedZone', {
+        domainName: this.props.domainName,
+        ...this.props.overrides?.hostedZoneProviderProps,
+      });
+    } else {
+      return this.props.hostedZone;
+    }
+  }
+
+  private getCertificate(): cm.ICertificate {
+    if (!this.props.certificate) {
+      return new cm.Certificate(this, 'Certificate', {
+        domainName: this.props.certificateDomainName ?? this.props.domainName,
+        validation: cm.CertificateValidation.fromDns(this.hostedZone),
+        ...this.props.overrides?.certificateProps,
+      });
+    } else {
+      return this.props.certificate;
+    }
+  }
+
+  /**
+   * Creates DNS records (A and AAAA) records for {@link CustomDomainProps.domainName}
+   */
+  createDnsRecords(LoadBalancerTarget: ILoadBalancerV2): void {
+    const recordProps: route53.ARecordProps & route53.AaaaRecordProps = {
+      recordName: this.props.domainName,
+      zone: this.hostedZone,
+      target: route53.RecordTarget.fromAlias(new route53targets.LoadBalancerTarget(LoadBalancerTarget)),
+    };
+    new route53.ARecord(this, 'ARecordMain', recordProps); // IPv4
+    new route53.AaaaRecord(this, 'AaaaRecordMain', recordProps); // IPv6
+  }
+}

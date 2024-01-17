@@ -1,0 +1,529 @@
+{
+  "version": "15.0.0",
+  "artifacts": {
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    },
+    "custom-cat-image.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "custom-cat-image.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "custom-cat-image": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "custom-cat-image.template.json",
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/24dc70031e3b8c7c3a0b47981481897de1b05f8b8f71fcb42f7526d46d904ad2.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "custom-cat-image.assets"
+        ]
+      },
+      "dependencies": [
+        "custom-cat-image.assets"
+      ],
+      "metadata": {
+        "/custom-cat-image/CheshireCat/Vpc/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcB671BC86"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet1SubnetD9F10DE1"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet1RouteTable8B0AE92C"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet1RouteTableAssociation38FC286B"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet1DefaultRoute14A87614"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet1/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet1EIP86C874BF"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet1/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet1NATGatewayD09F1325"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet2SubnetD0848682"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet2RouteTable6C35ED29"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet2RouteTableAssociationCCE60EB0"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet2DefaultRoute267DCAA1"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet2/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet2EIP79178407"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PublicSubnet2/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPublicSubnet2NATGateway60C976BA"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet1SubnetB06680A7"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet1RouteTableFD714B3D"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet1RouteTableAssociationF11D1283"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet1DefaultRoute5A766532"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet2Subnet708984CF"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet2RouteTableFAB323FB"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet2RouteTableAssociationFBA68A30"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/PrivateSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcPrivateSubnet2DefaultRouteDB15D76C"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/IGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcIGW2AC71E3C"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/Vpc/VPCGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatVpcVPCGW13D26AFF"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/MainEfs/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatMainEfs1F8A2E55"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/MainEfs/EfsSecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatMainEfsEfsSecurityGroup8D7C078C"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/MainEfs/EfsSecurityGroup/from customcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E:2049": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatMainEfsEfsSecurityGroupfromcustomcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E20498F62858A"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/MainEfs/EfsSecurityGroup/from customcatimageCheshireCatCatEcsClusterCatFargateServiceSecurityGroup3582EC1C:2049": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatMainEfsEfsSecurityGroupfromcustomcatimageCheshireCatCatEcsClusterCatFargateServiceSecurityGroup3582EC1C2049616DC558"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/MainEfs/EfsMountTarget1": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatMainEfsEfsMountTarget1FAB6A220"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/MainEfs/EfsMountTarget2": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatMainEfsEfsMountTarget2B01F50C0"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantCluster/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantCluster9C56AEA2"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLB8BDD7984"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup4F1053D6"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/SecurityGroup/to customcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E:6333": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGrouptocustomcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E63330BFA7EF6"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/PublicListener/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLBPublicListenerD8B50884"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/PublicListener/ECSGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLBPublicListenerECSGroup2F181D78"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LoadBalancerDNS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLoadBalancerDNSFB53C5D8"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/ServiceURL": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceServiceURL09781C2D"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/TaskDef/TaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceTaskDefTaskRole792F795B"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/TaskDef/TaskRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceTaskDefTaskRoleDefaultPolicy6DD9957A"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/TaskDef/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceTaskDef4E43A6F2"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/TaskDef/web/LogGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceTaskDefwebLogGroup5AC45E0C"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/TaskDef/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceTaskDefExecutionRole011FDBD3"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/TaskDef/ExecutionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceTaskDefExecutionRoleDefaultPolicy2D79750D"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/Service": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateService18A7E13A"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup": [
+          {
+            "type": "aws:cdk:warning",
+            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customize rules, set allowAllOutbound=false on the SecurityGroup",
+            "trace": [
+              "Annotations.addMessage (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:64:25)",
+              "Annotations.addWarning (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:26:10)",
+              "SecurityGroup.addEgressRule (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/security-group.ts:310:30)",
+              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:86:23)",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
+              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:85:45)",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
+              "Connections.allowTo (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:84:26)",
+              "QdrantEcsCluster (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/QdrantEcsCluster.ts:76:45)",
+              "CdkCheshireCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/CheshireCat.ts:60:29)",
+              "SimpleCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/stack.ts:13:25)",
+              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/app.ts:6:1)",
+              "Object.<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/app.ts:6:38)",
+              "Module._compile (node:internal/modules/cjs/loader:1376:14)",
+              "Object.S (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/node_modules/tsx/dist/cjs/index.cjs:1:1292)",
+              "Module.load (node:internal/modules/cjs/loader:1207:32)",
+              "Module._load (node:internal/modules/cjs/loader:1023:12)",
+              "cjsLoader (node:internal/modules/esm/translators:356:17)",
+              "ModuleWrap.<anonymous> (node:internal/modules/esm/translators:305:7)",
+              "ModuleJob.run (node:internal/modules/esm/module_job:218:25)",
+              "async ModuleLoader.import (node:internal/modules/esm/loader:329:24)",
+              "async loadESM (node:internal/process/esm_loader:28:7)",
+              "async handleMainPromise (node:internal/modules/run_main:113:12)"
+            ]
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup0573A1C3"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup/from customcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup2B918DDD:6333": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroupfromcustomcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup2B918DDD63338136C026"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup/from customcatimageCheshireCatMainEfsEfsSecurityGroupE7FD96C7:2049": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroupfromcustomcatimageCheshireCatMainEfsEfsSecurityGroupE7FD96C7204959AAC8F3"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatCluster/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatCluster38B41D90"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/LB/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceLBD31F79A7"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/LB/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceLBSecurityGroup593BC2CC"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/LB/SecurityGroup/to customcatimageCheshireCatCatEcsClusterCatFargateServiceSecurityGroup3582EC1C:80": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceLBSecurityGrouptocustomcatimageCheshireCatCatEcsClusterCatFargateServiceSecurityGroup3582EC1C8081DF558C"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/LB/PublicListener/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceLBPublicListenerCD3919DE"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/LB/PublicListener/ECSGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceLBPublicListenerECSGroup1614C109"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/LoadBalancerDNS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceLoadBalancerDNSA69A9D53"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/ServiceURL": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceServiceURLD6C4ED80"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/TaskDef/TaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceTaskDefTaskRoleF9924A1C"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/TaskDef/TaskRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceTaskDefTaskRoleDefaultPolicy75445D37"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/TaskDef/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceTaskDefF999623A"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/TaskDef/web/LogGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceTaskDefwebLogGroupBC7A147D"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/TaskDef/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceTaskDefExecutionRoleD6A5376D"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/TaskDef/ExecutionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceTaskDefExecutionRoleDefaultPolicy2F39DA7E"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/Service/Service": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceA78EE7A4"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/Service/SecurityGroup": [
+          {
+            "type": "aws:cdk:warning",
+            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customize rules, set allowAllOutbound=false on the SecurityGroup",
+            "trace": [
+              "Annotations.addMessage (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:64:25)",
+              "Annotations.addWarning (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:26:10)",
+              "SecurityGroup.addEgressRule (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/security-group.ts:310:30)",
+              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:86:23)",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
+              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:85:45)",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
+              "Connections.allowTo (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:84:26)",
+              "CatEcsCluster (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/CatEcsCluster.ts:106:45)",
+              "CdkCheshireCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/CheshireCat.ts:68:26)",
+              "SimpleCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/stack.ts:13:25)",
+              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/app.ts:6:1)",
+              "Object.<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/app.ts:6:38)",
+              "Module._compile (node:internal/modules/cjs/loader:1376:14)",
+              "Object.S (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/node_modules/tsx/dist/cjs/index.cjs:1:1292)",
+              "Module.load (node:internal/modules/cjs/loader:1207:32)",
+              "Module._load (node:internal/modules/cjs/loader:1023:12)",
+              "cjsLoader (node:internal/modules/esm/translators:356:17)",
+              "ModuleWrap.<anonymous> (node:internal/modules/esm/translators:305:7)",
+              "ModuleJob.run (node:internal/modules/esm/module_job:218:25)",
+              "async ModuleLoader.import (node:internal/modules/esm/loader:329:24)",
+              "async loadESM (node:internal/process/esm_loader:28:7)",
+              "async handleMainPromise (node:internal/modules/run_main:113:12)"
+            ]
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/Service/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceSecurityGroup29A2B458"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/Service/SecurityGroup/from customcatimageCheshireCatCatEcsClusterCatFargateServiceLBSecurityGroupC03181E1:80": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceSecurityGroupfromcustomcatimageCheshireCatCatEcsClusterCatFargateServiceLBSecurityGroupC03181E180A8463C2A"
+          }
+        ],
+        "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/Service/SecurityGroup/from customcatimageCheshireCatMainEfsEfsSecurityGroupE7FD96C7:2049": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheshireCatCatEcsClusterCatFargateServiceSecurityGroupfromcustomcatimageCheshireCatMainEfsEfsSecurityGroupE7FD96C72049DE6DDE7F"
+          }
+        ],
+        "/custom-cat-image/CatHost": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CatHost"
+          }
+        ],
+        "/custom-cat-image/QdrantHost": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QdrantHost"
+          }
+        ],
+        "/custom-cat-image/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/custom-cat-image/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/custom-cat-image/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/custom-cat-image/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "custom-cat-image"
+    }
+  }
+}
