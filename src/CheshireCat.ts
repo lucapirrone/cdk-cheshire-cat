@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as efs from 'aws-cdk-lib/aws-efs';
+import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { CatEcsCluster, CatEcsClusterOverrides } from './CatEcsCluster';
 import { Domain, DomainOverrides, DomainProps } from './Domain';
@@ -24,6 +25,14 @@ interface CdkCheshireCatProps {
    * {@link DomainProps}
    */
   readonly domainProps?: DomainProps;
+  /**
+   * Qdrant Api Key from Secrets Manager
+   */
+  readonly qdrantApiKeySecret?: sm.ISecret;
+  /**
+   * Cat Api Key from Secrets Manager
+   */
+  readonly catApiKeySecret?: sm.ISecret;
   /**
      * Override props for every construct.
      */
@@ -62,6 +71,7 @@ class CdkCheshireCat extends Construct {
       vpc,
       fileSystemMountPointPath: '/mnt/efs/fs1',
       qdrantDockerImagePath: path.resolve(__dirname, './docker-images/qdrant'),
+      qdrantApiKeySecret: props.qdrantApiKeySecret,
       overrides: props.overrides?.qdrantEcsCluster,
     });
 
@@ -71,6 +81,8 @@ class CdkCheshireCat extends Construct {
       fileSystemMountPointPath: '/mnt/efs/fs1',
       catDockerImagePath: path.resolve(__dirname, './docker-images/cheshire-cat'),
       qdrantEcsCluster: this.qdrantEcsCluster,
+      qdrantApiKeySecret: props.qdrantApiKeySecret,
+      catApiKeySecret: props.catApiKeySecret,
       overrides: props.overrides?.catEcsCluster,
     });
 

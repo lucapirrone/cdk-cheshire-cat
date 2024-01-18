@@ -30,6 +30,8 @@ jspm_packages/
 *.tgz
 .yarn-integrity
 .cache
+cdk.out
+__pycache__
 /test-reports/
 junit.xml
 /coverage/
@@ -50,5 +52,3 @@ junit.xml
 tsconfig.json
 !/API.md
 !/.projenrc.ts
-cdk.out
-__pycache__

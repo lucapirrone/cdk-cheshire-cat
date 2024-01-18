@@ -4,6 +4,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as efs from 'aws-cdk-lib/aws-efs';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { CustomDomain } from './CustomDomain';
 import { QdrantEcsCluster } from './QdrantEcsCluster';
@@ -64,6 +65,14 @@ interface CatEcsClusterProps {
    */
   readonly qdrantDomain?: CustomDomain;
   /**
+   * Qdrant Api Key from Secrets Manager
+   */
+  readonly qdrantApiKeySecret?: sm.ISecret;
+  /**
+   * Cat Api Key from Secrets Manager
+   */
+  readonly catApiKeySecret?: sm.ISecret;
+  /**
      * Override props for every construct.
      */
   readonly overrides?: CatEcsClusterOverrides;
@@ -101,6 +110,8 @@ class CatEcsCluster extends Construct {
           METADATA_FILE: `${props.fileSystemMountPointPath}/metadata.json`,
           QDRANT_HOST: props.qdrantDomain ? `https://${props.qdrantDomain.domainName}` : `http://${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
           QDRANT_PORT: String(props.qdrantEcsCluster.qdrantPort),
+          ...( props.qdrantApiKeySecret ? { QDRANT_API_KEY: props.qdrantApiKeySecret?.secretValue.toString() } : {}),
+          ...( props.catApiKeySecret ? { API_KEY: props.catApiKeySecret?.secretValue.toString() } : {}),
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
         },
       },

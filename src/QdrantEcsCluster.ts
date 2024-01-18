@@ -4,6 +4,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as efs from 'aws-cdk-lib/aws-efs';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { CustomDomain } from './CustomDomain';
 
@@ -35,6 +36,10 @@ interface QdrantEcsClusterProps {
      * Qdrant docker image local path.
      */
   readonly qdrantDockerImagePath: string;
+  /**
+   * Qdrant Api Key from Secrets Manager
+   */
+  readonly qdrantApiKeySecret?: sm.ISecret;
   /**
    * @see {@link CustomDomain}
    */
@@ -73,6 +78,7 @@ class QdrantEcsCluster extends Construct {
           QDRANT__STORAGE__STORAGE_PATH:
                         props.fileSystemMountPointPath + '/qdrantdata',
           QDRANT__SERVICE__HTTP_PORT: '80',
+          ...( props.qdrantApiKeySecret ? { QDRANT__SERVICE__API_KEY: props.qdrantApiKeySecret?.secretValue.toString() } : {}),
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
         },
       },

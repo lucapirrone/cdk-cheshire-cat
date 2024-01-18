@@ -8,6 +8,10 @@ const project = new awscdk.AwsCdkConstructLibrary({
   name: 'cdk-cheshire-cat',
   projenrcTs: true,
   repositoryUrl: 'https://github.com/lpirrone2000/cdk-cheshire-cat.git',
+  gitignore: [
+    'cdk.out',
+    '__pycache__',
+  ],
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
