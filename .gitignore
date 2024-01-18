@@ -50,3 +50,5 @@ junit.xml
 tsconfig.json
 !/API.md
 !/.projenrc.ts
+cdk.out
+__pycache__
