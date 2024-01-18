@@ -2,7 +2,7 @@ import { awscdk } from 'projen';
 const project = new awscdk.AwsCdkConstructLibrary({
   author: 'Luca Pirrone',
   authorAddress: 'lpirrone2000@gmail.com',
-  cdkVersion: '2.1.0',
+  cdkVersion: '2.61.0',
   defaultReleaseBranch: 'main',
   jsiiVersion: '~5.0.0',
   name: 'cdk-cheshire-cat',

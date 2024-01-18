@@ -56,9 +56,13 @@ interface CatEcsClusterProps {
      */
   readonly catEnvVariables?: CatEnvVariables;
   /**
-   * @see {@link CatDomain}
+   * @see {@link CustomDomain}
    */
-  readonly customDomain?: CustomDomain;
+  readonly catDomain?: CustomDomain;
+  /**
+   * @see {@link CustomDomain}
+   */
+  readonly qdrantDomain?: CustomDomain;
   /**
      * Override props for every construct.
      */
@@ -77,10 +81,14 @@ class CatEcsCluster extends Construct {
     const image = ecs.ContainerImage.fromRegistry('ghcr.io/cheshire-cat-ai/core:latest');
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'CatFargateService', {
       cluster: cluster,
-      listenerPort: props.customDomain ? 443 : 80,
-      domainName: props.customDomain?.domainName,
-      domainZone: props.customDomain?.hostedZone,
-      certificate: props.customDomain?.certificate,
+      listenerPort: props.catDomain ? 443 : 80,
+      domainName: props.catDomain?.domainName,
+      domainZone: props.catDomain?.hostedZone,
+      certificate: props.catDomain?.certificate,
+      runtimePlatform: {
+        cpuArchitecture: ecs.CpuArchitecture.ARM64,
+        operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
+      },
       ...props.overrides?.fargateService,
       taskImageOptions: {
         containerPort: 80,
@@ -91,9 +99,8 @@ class CatEcsCluster extends Construct {
           CORE_USE_SECURE_PROTOCOLS: 'true',
           CORE_PORT: '80',
           METADATA_FILE: `${props.fileSystemMountPointPath}/metadata.json`,
-          QDRANT_HOST: props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
+          QDRANT_HOST: props.qdrantDomain ? `https://${props.qdrantDomain.domainName}` : `http://${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
           QDRANT_PORT: String(props.qdrantEcsCluster.qdrantPort),
-          QDRANT_HTTPS: 'true',
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
         },
       },

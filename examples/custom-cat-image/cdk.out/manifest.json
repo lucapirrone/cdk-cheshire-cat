@@ -1,12 +1,6 @@
 {
-  "version": "15.0.0",
+  "version": "29.0.0",
   "artifacts": {
-    "Tree": {
-      "type": "cdk:tree",
-      "properties": {
-        "file": "tree.json"
-      }
-    },
     "custom-cat-image.assets": {
       "type": "cdk:asset-manifest",
       "properties": {
@@ -23,12 +17,17 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/24dc70031e3b8c7c3a0b47981481897de1b05f8b8f71fcb42f7526d46d904ad2.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/de98f89712fb3d131d8117f14be67fff3b273f42d70e78f0e22dc725552d49d8.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "custom-cat-image.assets"
-        ]
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
       },
       "dependencies": [
         "custom-cat-image.assets"
@@ -226,10 +225,10 @@
             "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup4F1053D6"
           }
         ],
-        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/SecurityGroup/to customcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E:6333": [
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/SecurityGroup/to customcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E:80": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGrouptocustomcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E63330BFA7EF6"
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGrouptocustomcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup7634E41E803ED8DB21"
           }
         ],
         "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/LB/PublicListener/Resource": [
@@ -301,17 +300,17 @@
         "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup": [
           {
             "type": "aws:cdk:warning",
-            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customize rules, set allowAllOutbound=false on the SecurityGroup",
+            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customized rules, set allowAllOutbound=false on the SecurityGroup",
             "trace": [
-              "Annotations.addMessage (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:64:25)",
-              "Annotations.addWarning (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:26:10)",
-              "SecurityGroup.addEgressRule (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/security-group.ts:310:30)",
-              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:86:23)",
-              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
-              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:85:45)",
-              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
-              "Connections.allowTo (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:84:26)",
-              "QdrantEcsCluster (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/QdrantEcsCluster.ts:76:45)",
+              "Annotations.addMessage (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1213)",
+              "Annotations.addWarning (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.js:1:600)",
+              "SecurityGroup.addEgressRule (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/security-group.js:1:7219)",
+              "/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:1747",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:5789)",
+              "/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:1708",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:5789)",
+              "Connections.allowTo (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:1636)",
+              "QdrantEcsCluster (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/QdrantEcsCluster.ts:93:45)",
               "CdkCheshireCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/CheshireCat.ts:60:29)",
               "SimpleCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/stack.ts:13:25)",
               "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/app.ts:6:1)",
@@ -335,10 +334,10 @@
             "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroup0573A1C3"
           }
         ],
-        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup/from customcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup2B918DDD:6333": [
+        "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup/from customcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup2B918DDD:80": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroupfromcustomcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup2B918DDD63338136C026"
+            "data": "CheshireCatQdrantEcsClusterQdrantFargateServiceSecurityGroupfromcustomcatimageCheshireCatQdrantEcsClusterQdrantFargateServiceLBSecurityGroup2B918DDD80B9614C09"
           }
         ],
         "/custom-cat-image/CheshireCat/QdrantEcsCluster/QdrantFargateService/Service/SecurityGroup/from customcatimageCheshireCatMainEfsEfsSecurityGroupE7FD96C7:2049": [
@@ -440,17 +439,17 @@
         "/custom-cat-image/CheshireCat/CatEcsCluster/CatFargateService/Service/SecurityGroup": [
           {
             "type": "aws:cdk:warning",
-            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customize rules, set allowAllOutbound=false on the SecurityGroup",
+            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customized rules, set allowAllOutbound=false on the SecurityGroup",
             "trace": [
-              "Annotations.addMessage (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:64:25)",
-              "Annotations.addWarning (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.ts:26:10)",
-              "SecurityGroup.addEgressRule (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/security-group.ts:310:30)",
-              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:86:23)",
-              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
-              "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:85:45)",
-              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:200:7)",
-              "Connections.allowTo (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.ts:84:26)",
-              "CatEcsCluster (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/CatEcsCluster.ts:106:45)",
+              "Annotations.addMessage (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1213)",
+              "Annotations.addWarning (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/core/lib/annotations.js:1:600)",
+              "SecurityGroup.addEgressRule (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/security-group.js:1:7219)",
+              "/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:1747",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:5789)",
+              "/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:1708",
+              "ReactiveList.forEachAndForever (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:5789)",
+              "Connections.allowTo (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/node_modules/aws-cdk-lib/aws-ec2/lib/connections.js:1:1636)",
+              "CatEcsCluster (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/CatEcsCluster.ts:122:45)",
               "CdkCheshireCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/src/CheshireCat.ts:68:26)",
               "SimpleCat (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/stack.ts:13:25)",
               "<anonymous> (/Users/lucapirrone/Documents/Progetti/Stregatto/cdk-cheshire-cat/examples/custom-cat-image/src/app.ts:6:1)",
@@ -524,6 +523,12 @@
         ]
       },
       "displayName": "custom-cat-image"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
     }
   }
 }
