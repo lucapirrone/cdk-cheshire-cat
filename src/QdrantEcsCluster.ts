@@ -78,8 +78,11 @@ class QdrantEcsCluster extends Construct {
           QDRANT__STORAGE__STORAGE_PATH:
                         props.fileSystemMountPointPath + '/qdrantdata',
           QDRANT__SERVICE__HTTP_PORT: '80',
-          ...( props.qdrantApiKeySecret ? { QDRANT__SERVICE__API_KEY: props.qdrantApiKeySecret?.secretValue.toString() } : {}),
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
+        },
+        secrets: {
+          ...( props.qdrantApiKeySecret ? { QDRANT__SERVICE__API_KEY: ecs.Secret.fromSecretsManager(props.qdrantApiKeySecret) } : {}),
+          ...props.overrides?.fargateService?.taskImageOptions?.secrets,
         },
       },
     });

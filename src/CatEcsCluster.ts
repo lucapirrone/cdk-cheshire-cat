@@ -108,11 +108,14 @@ class CatEcsCluster extends Construct {
           CORE_USE_SECURE_PROTOCOLS: 'true',
           CORE_PORT: '80',
           METADATA_FILE: `${props.fileSystemMountPointPath}/metadata.json`,
-          QDRANT_HOST: props.qdrantDomain ? `https://${props.qdrantDomain.domainName}` : `http://${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
+          QDRANT_HOST: props.qdrantDomain ? `https://${props.qdrantDomain.domainName}` : `${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
           QDRANT_PORT: String(props.qdrantEcsCluster.qdrantPort),
-          ...( props.qdrantApiKeySecret ? { QDRANT_API_KEY: props.qdrantApiKeySecret?.secretValue.toString() } : {}),
-          ...( props.catApiKeySecret ? { API_KEY: props.catApiKeySecret?.secretValue.toString() } : {}),
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
+        },
+        secrets: {
+          ...( props.qdrantApiKeySecret ? { QDRANT_API_KEY: ecs.Secret.fromSecretsManager(props.qdrantApiKeySecret) } : {}),
+          ...( props.catApiKeySecret ? { API_KEY: ecs.Secret.fromSecretsManager(props.catApiKeySecret) } : {}),
+          ...props.overrides?.fargateService?.taskImageOptions?.secrets,
         },
       },
     });
