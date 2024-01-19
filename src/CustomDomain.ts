@@ -21,6 +21,11 @@ export interface CustomDomainProps {
    */
   readonly domainName: string;
   /**
+   * Subdomain used for this domain.
+   * @example "cat" to use "cat.example.com" as full domain
+   */
+  readonly subDomain?: string;
+  /**
    * You must create the hosted zone out-of-band.
    * You can lookup the hosted zone outside this construct and pass it in via this prop.
    * Alternatively if this prop is `undefined`, then the hosted zone will be
@@ -70,6 +75,10 @@ export class CustomDomain extends Construct {
    */
   public domainName: string;
   /**
+   * SubDomain name.
+   */
+  public subDomain?: string;
+  /**
    * Route53 Hosted Zone.
    */
   hostedZone: route53.IHostedZone;
@@ -86,6 +95,7 @@ export class CustomDomain extends Construct {
     this.hostedZone = this.getHostedZone();
     this.certificate = this.getCertificate();
     this.domainName = this.props.domainName;
+    this.subDomain = this.props.subDomain;
   }
 
   private getHostedZone(): route53.IHostedZone {
@@ -116,7 +126,7 @@ export class CustomDomain extends Construct {
    */
   createDnsRecords(LoadBalancerTarget: ILoadBalancerV2): void {
     const recordProps: route53.ARecordProps & route53.AaaaRecordProps = {
-      recordName: this.props.domainName,
+      recordName: `${this.props.subDomain}.${this.props.domainName}`,
       zone: this.hostedZone,
       target: route53.RecordTarget.fromAlias(new route53targets.LoadBalancerTarget(LoadBalancerTarget)),
     };

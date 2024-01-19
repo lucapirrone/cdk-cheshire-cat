@@ -1,0 +1,11 @@
+{
+  "availability-zones:account=826474206466:region=eu-central-1": [
+    "eu-central-1a",
+    "eu-central-1b",
+    "eu-central-1c"
+  ],
+  "hosted-zone:account=826474206466:domainName=lucapirrone.com:region=eu-central-1": {
+    "Id": "/hostedzone/Z0876633219SO4R9GE64H",
+    "Name": "lucapirrone.com."
+  }
+}
