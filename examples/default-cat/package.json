@@ -1,5 +1,5 @@
 {
-  "name": "cdk-cheshire-cat-simple-cat",
+  "name": "cdk-cheshire-cat-default-cat",
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",

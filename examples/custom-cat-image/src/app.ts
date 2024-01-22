@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { SimpleCat } from './stack';
+import { CustomCatImage } from './stack';
 
 const app = new cdk.App();
-new SimpleCat(app, 'custom-cat-image');
+new CustomCatImage(app, 'custom-cat-image');
