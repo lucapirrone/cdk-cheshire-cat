@@ -43,13 +43,15 @@ class CdkCheshireCat extends Construct {
   protected props: CdkCheshireCatProps;
   public qdrantEcsCluster: QdrantEcsCluster;
   public catEcsCluster: CatEcsCluster;
+  public fileSystem: efs.FileSystem;
+  public vpc: ec2.IVpc;
   public domain?: Domain;
 
   constructor(scope: Construct, id: string, props: CdkCheshireCatProps = {}) {
     super(scope, id);
     this.props = props;
 
-    const vpc = this.createVpc();
+    this.vpc = this.createVpc();
 
 
     if (props.domainProps) {
@@ -59,16 +61,16 @@ class CdkCheshireCat extends Construct {
       });
     }
 
-    const fileSystem = new efs.FileSystem(this, 'MainEfs', {
-      vpc,
+    this.fileSystem = new efs.FileSystem(this, 'MainEfs', {
+      vpc: this.vpc,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
       encrypted: true,
       ...props.overrides?.fileSystem,
     });
 
     this.qdrantEcsCluster = new QdrantEcsCluster(this, 'QdrantEcsCluster', {
-      efs: fileSystem,
-      vpc,
+      efs: this.fileSystem,
+      vpc: this.vpc,
       fileSystemMountPointPath: '/mnt/efs/fs1',
       qdrantDockerImagePath: path.resolve(__dirname, './docker-images/qdrant'),
       qdrantApiKeySecret: props.qdrantApiKeySecret,
@@ -76,8 +78,8 @@ class CdkCheshireCat extends Construct {
     });
 
     this.catEcsCluster = new CatEcsCluster(this, 'CatEcsCluster', {
-      efs: fileSystem,
-      vpc,
+      efs: this.fileSystem,
+      vpc: this.vpc,
       fileSystemMountPointPath: '/mnt/efs/fs1',
       catDockerImagePath: path.resolve(__dirname, './docker-images/cheshire-cat'),
       qdrantEcsCluster: this.qdrantEcsCluster,
