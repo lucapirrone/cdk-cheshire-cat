@@ -2,47 +2,35 @@
 
 CDK construct library that allows you to create a [Cheshire Cat](https://github.com/cheshire-cat-ai/core) using the AWS Cloud Development Kit (CDK) in TypeScript. The project's infrastructure includes setting up a Qdrant server, the vector search engine, as part of its architecture.
 
-## How to use
-
-1. Configure AWS CLI as per instruction [Installing the AWS CLI version 2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
-2. Configure AWS CDK **TypeScript** environment [Getting Started With the AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html)
-3. Run `npm i` to install dependencies
-4. Run
-
 ## Quickstart
 
+### Installation
+
+Use the [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) package manager to install the package
+
+```bash
+npm install cdk-cheshire-cat
+```
+
+### Usage
+
+Use the construct in your CDK application:
+
 ```ts
-import { CfnOutput, Stack, StackProps, App } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
 import { CdkCheshireCat } from 'cdk-cheshire-cat';
 
-export class DefaultCat extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, props);
-
-    const cheshireCat = new CdkCheshireCat(this, 'CheshireCat');
-
-    new CfnOutput(this, "CatHost", {
-      value: cheshireCat.catEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
-    });
-    new CfnOutput(this, "QdrantHost", {
-      value: cheshireCat.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
-    });
-  }
-}
-
-const app = new App();
-new DefaultCat(app, 'default');
+new CdkCheshireCat(this, 'CheshireCat');
 ```
 
 ### Deployment
 
-1. Run `cdk bootstrap`
-2. Run `cdk deploy`
-3. Wait a few minutes for the deployment to complete
+1. Configure AWS CLI as per instruction [Get started with the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html)
+2. Run `cdk bootstrap`
+3. Run `cdk deploy`
+4. Wait a few minutes for the deployment to complete
    ![1705925307100](image/README/1705925307100.png)
-4. Go to CatHost output url with /admin to access the CheshireCat admin
-5. Go to QdrantHost output url with /dashboard to access the Qdrant Server dashboard
+5. Go to CatHost output url with /admin to access the CheshireCat admin
+6. Go to QdrantHost output url with /dashboard to access the Qdrant Server dashboard
 
 ## Infrastructure (AWS)
 
@@ -298,7 +286,7 @@ export class DomainCat extends Stack {
 }
 
 const app = new cdk.App();
-new DomainCat(app, 'domain-cat', { env: { account: 'ACCOUNT-ID', region: 'REGION' } });
+new DomainCat(app, 'domain-cat', { env: { account: '000000000000', region: 'eu-central-1' } });
 ```
 
 See these example CDK apps [here](./examples).
