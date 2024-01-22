@@ -12,6 +12,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'cdk.out',
     '__pycache__',
   ],
+  sampleCode: false, // do not generate sample test files
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
