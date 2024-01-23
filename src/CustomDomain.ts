@@ -42,9 +42,7 @@ export interface CustomDomainProps {
    */
   readonly certificate?: cm.ICertificate;
   /**
-   * The domain name used in this construct when creating an ACM `Certificate`. Useful
-   * when passing {@link CustomDomainProps.alternateNames} and you need to specify
-   * a wildcard domain like "*.example.com". If `undefined`, then {@link CustomDomainProps.domainName}
+   * The domain name used in this construct when creating an ACM `Certificate`. If `undefined`, then {@link CustomDomainProps.domainName}
    * will be used.
    *
    * If {@link CustomDomainProps.certificate} is passed, then this prop is ignored.
@@ -81,11 +79,11 @@ export class CustomDomain extends Construct {
   /**
    * Route53 Hosted Zone.
    */
-  hostedZone: route53.IHostedZone;
+  hostedZone?: route53.IHostedZone;
   /**
    * ACM Certificate.
    */
-  certificate: cm.ICertificate;
+  certificate?: cm.ICertificate;
 
   private props: CustomDomainProps;
 
@@ -98,7 +96,8 @@ export class CustomDomain extends Construct {
     this.subDomain = this.props.subDomain;
   }
 
-  private getHostedZone(): route53.IHostedZone {
+  private getHostedZone(): route53.IHostedZone | undefined {
+    if (this.props.certificate) {return undefined;};
     if (!this.props.hostedZone) {
       return route53.HostedZone.fromLookup(this, 'HostedZone', {
         domainName: this.props.domainName,
@@ -125,6 +124,7 @@ export class CustomDomain extends Construct {
    * Creates DNS records (A and AAAA) records for {@link CustomDomainProps.domainName}
    */
   createDnsRecords(LoadBalancerTarget: ILoadBalancerV2): void {
+    if (!this.hostedZone) {return;}
     const recordProps: route53.ARecordProps & route53.AaaaRecordProps = {
       recordName: `${this.props.subDomain}.${this.props.domainName}`,
       zone: this.hostedZone,

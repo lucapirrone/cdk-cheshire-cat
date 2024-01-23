@@ -65,6 +65,7 @@ class QdrantEcsCluster extends Construct {
     const image = ecs.ContainerImage.fromRegistry('qdrant/qdrant:latest');
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'QdrantFargateService', {
       cluster: cluster,
+      assignPublicIp: false,
       listenerPort: this.qdrantPort,
       domainName: props.customDomain?.domainName,
       domainZone: props.customDomain?.hostedZone,

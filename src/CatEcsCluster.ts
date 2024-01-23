@@ -90,6 +90,7 @@ class CatEcsCluster extends Construct {
     const image = ecs.ContainerImage.fromRegistry('ghcr.io/cheshire-cat-ai/core:latest');
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'CatFargateService', {
       cluster: cluster,
+      assignPublicIp: false,
       listenerPort: props.catDomain ? 443 : 80,
       domainName: props.catDomain?.domainName,
       domainZone: props.catDomain?.hostedZone,
@@ -108,7 +109,7 @@ class CatEcsCluster extends Construct {
           CORE_USE_SECURE_PROTOCOLS: 'true',
           CORE_PORT: '80',
           METADATA_FILE: `${props.fileSystemMountPointPath}/metadata.json`,
-          QDRANT_HOST: props.qdrantDomain ? `https://${props.qdrantDomain.domainName}` : `${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
+          QDRANT_HOST: `${props.qdrantDomain ? 'https://' : 'http://'}${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
           QDRANT_PORT: String(props.qdrantEcsCluster.qdrantPort),
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
         },
