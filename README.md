@@ -188,31 +188,18 @@ If you want to set a custom values for the api keys you can create manually the 
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { CdkCheshireCat } from 'cdk-cheshire-cat';
-import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as cdk from 'aws-cdk-lib'
-import * as path from 'path'
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 
 export class SecureCat extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const image = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'))
-
     const catApiKeySecret = sm.Secret.fromSecretCompleteArn(this, 'CatApiKey', "arn:aws:secretsmanager:<Region>:<AccountId>:secret:SecretName-6RandomCharacters")
     const qdrantApiKeySecret = sm.Secret.fromSecretCompleteArn(this, 'QdrantApiKey', "arn:aws:secretsmanager:<Region>:<AccountId>:secret:SecretName-6RandomCharacters")
 
 
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
-      overrides: {
-        catEcsCluster: {
-          fargateService: {
-            taskImageOptions: {
-              image
-            }
-          }
-        }
-      },
       catApiKeySecret,
       qdrantApiKeySecret,
     });
@@ -245,25 +232,12 @@ import { DomainCat } from './stack';
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { CdkCheshireCat } from 'cdk-cheshire-cat';
-import * as ecs from 'aws-cdk-lib/aws-ecs'
-import * as path from 'path' 
 
 export class DomainCat extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const image = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'))
-
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
-      overrides: {
-        catEcsCluster: {
-          fargateService: {
-            taskImageOptions: {
-              image
-            }
-          }
-        }
-      },
       domainProps: {
         catDomainProps: {
           domainName: 'example.com',
@@ -287,6 +261,50 @@ export class DomainCat extends Stack {
 
 const app = new cdk.App();
 new DomainCat(app, 'domain-cat', { env: { account: '000000000000', region: 'eu-central-1' } });
+```
+
+If you want
+
+```typescript
+import * as cdk from 'aws-cdk-lib';
+import { DomainCat } from './stack';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { CdkCheshireCat } from 'cdk-cheshire-cat';
+
+export class DomainCat extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
+
+    const domainCert = cm.Certificate.fromCertificateArn(this, 'Certificate', 'arn:aws:acm:region:account:certificate/certificate_ID')
+
+    const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
+      domainProps: {
+        catDomainProps: {
+          certificate: domainCert,
+          domainName: 'lucapirrone.com',
+          subDomain: 'cat'
+        },
+        qdrantDomainProps: {
+          certificate: domainCert,
+          domainName: 'lucapirrone.com',
+          subDomain: 'qdrant'
+        }
+      }
+    });
+
+    new CfnOutput(this, "CatHost", {
+      value: cheshireCat.domain?.catDomain.domainName ?? cheshireCat.catEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
+    });
+    new CfnOutput(this, "QdrantHost", {
+      value: cheshireCat.domain?.qdrantDomain.domainName ?? cheshireCat.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
+    });
+  }
+}
+
+const app = new cdk.App();
+new DomainCat(app, 'domain-cat', { env: { account: '000000000000', region: 'eu-central-1' } });
+
 ```
 
 See these example CDK apps [here](./examples).

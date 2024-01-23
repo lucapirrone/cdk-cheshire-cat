@@ -7,7 +7,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   jsiiVersion: '~5.0.0',
   name: 'cdk-cheshire-cat',
   projenrcTs: true,
-  repositoryUrl: 'https://github.com/lpirrone2000/cdk-cheshire-cat.git',
+  repositoryUrl: 'https://github.com/lucapirrone/cdk-cheshire-cat.git',
   gitignore: [
     'cdk.out',
     '__pycache__',
