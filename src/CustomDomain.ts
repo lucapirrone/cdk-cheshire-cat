@@ -42,13 +42,6 @@ export interface CustomDomainProps {
    */
   readonly certificate?: cm.ICertificate;
   /**
-   * The domain name used in this construct when creating an ACM `Certificate`. If `undefined`, then {@link CustomDomainProps.domainName}
-   * will be used.
-   *
-   * If {@link CustomDomainProps.certificate} is passed, then this prop is ignored.
-   */
-  readonly certificateDomainName?: string;
-  /**
    * Override props for every construct.
    */
   readonly overrides?: CustomDomainOverrides;
@@ -94,11 +87,11 @@ export class CustomDomain extends Construct {
   constructor(scope: Construct, id: string, props: CustomDomainProps) {
     super(scope, id);
     this.props = props;
-    this.hostedZone = this.getHostedZone();
-    this.certificate = this.getCertificate();
     this.domainName = this.props.domainName;
     this.subDomain = this.props.subDomain;
     this.fullDomain = `${this.props.subDomain}.${this.props.domainName}`;
+    this.hostedZone = this.getHostedZone();
+    this.certificate = this.getCertificate();
   }
 
   private getHostedZone(): route53.IHostedZone | undefined {
@@ -116,7 +109,7 @@ export class CustomDomain extends Construct {
   private getCertificate(): cm.ICertificate {
     if (!this.props.certificate) {
       return new cm.Certificate(this, 'Certificate', {
-        domainName: this.props.certificateDomainName ?? this.props.domainName,
+        domainName: this.fullDomain,
         validation: cm.CertificateValidation.fromDns(this.hostedZone),
         ...this.props.overrides?.certificateProps,
       });

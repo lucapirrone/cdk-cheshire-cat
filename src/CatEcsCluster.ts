@@ -105,8 +105,8 @@ class CatEcsCluster extends Construct {
           CORE_USE_SECURE_PROTOCOLS: props.catDomain ? 'true' : 'false',
           CORE_PORT: props.catDomain ? '443' : '80',
           METADATA_FILE: `${props.fileSystemMountPointPath}/metadata.json`,
-          QDRANT_HOST: `${props.qdrantDomain?.hostedZone ? 'https://'+props.qdrantDomain?.fullDomain : 'http://'}${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
-          QDRANT_PORT: String(props.qdrantDomain?.hostedZone ? '443' : '80'),
+          QDRANT_HOST: `${props.qdrantDomain?.hostedZone ? `https://${props.qdrantDomain?.fullDomain}` : `http://${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`}`,
+          QDRANT_PORT: props.qdrantDomain?.hostedZone ? '443' : '80',
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
         },
         secrets: {

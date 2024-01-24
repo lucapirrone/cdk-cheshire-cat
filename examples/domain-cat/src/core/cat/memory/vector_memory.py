@@ -67,9 +67,6 @@ class VectorMemory:
             qdrant_https = is_https(qdrant_host)
             qdrant_host = extract_domain_from_url(qdrant_host)
             qdrant_api_key = os.getenv("QDRANT_API_KEY")
-            print('QDRANT API KEY')
-            print(os.getenv("QDRANT_API_KEY"))
-            print(qdrant_api_key)
 
             try:
                 s = socket.socket()
