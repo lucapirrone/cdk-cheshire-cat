@@ -73,6 +73,10 @@ export class CustomDomain extends Construct {
    */
   public domainName: string;
   /**
+   * Full domain.
+   */
+  public fullDomain: string;
+  /**
    * SubDomain name.
    */
   public subDomain?: string;
@@ -94,6 +98,7 @@ export class CustomDomain extends Construct {
     this.certificate = this.getCertificate();
     this.domainName = this.props.domainName;
     this.subDomain = this.props.subDomain;
+    this.fullDomain = `${this.props.subDomain}.${this.props.domainName}`;
   }
 
   private getHostedZone(): route53.IHostedZone | undefined {
@@ -126,7 +131,7 @@ export class CustomDomain extends Construct {
   createDnsRecords(LoadBalancerTarget: ILoadBalancerV2): void {
     if (!this.hostedZone) {return;}
     const recordProps: route53.ARecordProps & route53.AaaaRecordProps = {
-      recordName: `${this.props.subDomain}.${this.props.domainName}`,
+      recordName: this.fullDomain,
       zone: this.hostedZone,
       target: route53.RecordTarget.fromAlias(new route53targets.LoadBalancerTarget(LoadBalancerTarget)),
     };

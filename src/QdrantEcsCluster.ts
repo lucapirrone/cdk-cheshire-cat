@@ -3,23 +3,17 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as efs from 'aws-cdk-lib/aws-efs';
+import * as elb2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { CustomDomain } from './CustomDomain';
 
-interface QdrantConfiguration {
-  qdrantPort?: number;
-}
 interface QdrantEcsClusterOverrides {
   readonly cluster?: ecs.ClusterProps;
   readonly fargateService?: ecsPatterns.ApplicationLoadBalancedFargateServiceProps;
 }
 interface QdrantEcsClusterProps {
-  /**
-     * Qdrant server configuration.
-     */
-  readonly configuration?: QdrantConfiguration;
   /**
      * VPC to launch the ecs cluster in.
      */
@@ -53,11 +47,9 @@ interface QdrantEcsClusterProps {
 
 class QdrantEcsCluster extends Construct {
   public fargateService: ecsPatterns.ApplicationLoadBalancedFargateService;
-  public qdrantPort: number;
 
   constructor(scope: Construct, id: string, props: QdrantEcsClusterProps) {
     super(scope, id);
-    this.qdrantPort = props.configuration?.qdrantPort ?? 80;
     const cluster = new ecs.Cluster(this, 'QdrantCluster', {
       vpc: props.vpc,
       ...props.overrides?.cluster,
@@ -66,13 +58,10 @@ class QdrantEcsCluster extends Construct {
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'QdrantFargateService', {
       cluster: cluster,
       assignPublicIp: false,
-      listenerPort: this.qdrantPort,
-      domainName: props.customDomain?.domainName,
+      domainName: props.customDomain?.hostedZone ? props.customDomain?.domainName : undefined,
       domainZone: props.customDomain?.hostedZone,
-      certificate: props.customDomain?.certificate,
       ...props.overrides?.fargateService,
       taskImageOptions: {
-        containerPort: this.qdrantPort,
         image,
         ...props.overrides?.fargateService?.taskImageOptions,
         environment: {
@@ -87,6 +76,18 @@ class QdrantEcsCluster extends Construct {
         },
       },
     });
+    if (props.customDomain && props.customDomain.certificate) {
+      this.fargateService.loadBalancer.addListener('QdrantHttpsListener', {
+        protocol: elb2.ApplicationProtocol.HTTPS,
+        port: 443,
+        certificates: [
+          elb2.ListenerCertificate.fromCertificateManager(props.customDomain.certificate),
+        ],
+        defaultTargetGroups: [
+          this.fargateService.targetGroup,
+        ],
+      });
+    }
     const volumeName = 'mainEfs';
     this.fargateService.taskDefinition.addVolume({
       name: volumeName,

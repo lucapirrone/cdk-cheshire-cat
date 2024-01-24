@@ -74,6 +74,7 @@ class CdkCheshireCat extends Construct {
       fileSystemMountPointPath: '/mnt/efs/fs1',
       qdrantDockerImagePath: path.resolve(__dirname, './docker-images/qdrant'),
       qdrantApiKeySecret: props.qdrantApiKeySecret,
+      customDomain: this.domain?.qdrantDomain,
       overrides: props.overrides?.qdrantEcsCluster,
     });
 
@@ -85,6 +86,8 @@ class CdkCheshireCat extends Construct {
       qdrantEcsCluster: this.qdrantEcsCluster,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
       catApiKeySecret: props.catApiKeySecret,
+      catDomain: this.domain?.catDomain,
+      qdrantDomain: this.domain?.qdrantDomain,
       overrides: props.overrides?.catEcsCluster,
     });
 

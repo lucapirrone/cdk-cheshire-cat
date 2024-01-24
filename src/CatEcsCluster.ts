@@ -3,6 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as efs from 'aws-cdk-lib/aws-efs';
+import * as elb2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
@@ -91,26 +92,21 @@ class CatEcsCluster extends Construct {
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'CatFargateService', {
       cluster: cluster,
       assignPublicIp: false,
-      listenerPort: props.catDomain ? 443 : 80,
-      domainName: props.catDomain?.domainName,
-      domainZone: props.catDomain?.hostedZone,
-      certificate: props.catDomain?.certificate,
       runtimePlatform: {
         cpuArchitecture: ecs.CpuArchitecture.ARM64,
         operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
       },
       ...props.overrides?.fargateService,
       taskImageOptions: {
-        containerPort: 80,
         image,
         ...props.overrides?.fargateService?.taskImageOptions,
         environment: {
           WATCHFILES_FORCE_POLLING: 'false',
-          CORE_USE_SECURE_PROTOCOLS: 'true',
-          CORE_PORT: '80',
+          CORE_USE_SECURE_PROTOCOLS: props.catDomain ? 'true' : 'false',
+          CORE_PORT: props.catDomain ? '443' : '80',
           METADATA_FILE: `${props.fileSystemMountPointPath}/metadata.json`,
-          QDRANT_HOST: `${props.qdrantDomain ? 'https://' : 'http://'}${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
-          QDRANT_PORT: String(props.qdrantEcsCluster.qdrantPort),
+          QDRANT_HOST: `${props.qdrantDomain?.hostedZone ? 'https://'+props.qdrantDomain?.fullDomain : 'http://'}${props.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName}`,
+          QDRANT_PORT: String(props.qdrantDomain?.hostedZone ? '443' : '80'),
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
         },
         secrets: {
@@ -120,6 +116,18 @@ class CatEcsCluster extends Construct {
         },
       },
     });
+    if (props.catDomain && props.catDomain.certificate) {
+      this.fargateService.loadBalancer.addListener('CatHttpsListener', {
+        protocol: elb2.ApplicationProtocol.HTTPS,
+        port: 443,
+        certificates: [
+          elb2.ListenerCertificate.fromCertificateManager(props.catDomain.certificate),
+        ],
+        defaultTargetGroups: [
+          this.fargateService.targetGroup,
+        ],
+      });
+    }
 
     const volumeName = 'mainEfs';
     this.fargateService.taskDefinition.addVolume({
