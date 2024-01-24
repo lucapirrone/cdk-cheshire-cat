@@ -1,3 +1,0 @@
-
-# zip files should be created just in time for tests and deleted afterwards
-*.zip
