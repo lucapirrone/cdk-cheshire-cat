@@ -1,6 +1,11 @@
+![1705925803352](image/README/cheshire-cat-rocket-cloud.png)
+
 ## What is this?
 
 CDK construct library that allows you to create a [Cheshire Cat](https://github.com/cheshire-cat-ai/core) using the AWS Cloud Development Kit (CDK) in TypeScript. The project's infrastructure includes setting up a Qdrant server, the vector search engine, as part of its architecture.
+
+> **CAUTION**
+> cdk-cheshire-cat needs cheshire cat core version **>=** 1.4.8
 
 ## Quickstart
 

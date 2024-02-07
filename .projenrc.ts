@@ -11,6 +11,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   gitignore: [
     'cdk.out',
     '__pycache__',
+    '.DS_Store',
   ],
   sampleCode: false, // do not generate sample test files
 

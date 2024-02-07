@@ -32,6 +32,7 @@ jspm_packages/
 .cache
 cdk.out
 __pycache__
+.DS_Store
 /test-reports/
 junit.xml
 /coverage/
