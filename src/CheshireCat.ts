@@ -44,6 +44,7 @@ class CdkCheshireCat extends Construct {
   public qdrantEcsCluster: QdrantEcsCluster;
   public catEcsCluster: CatEcsCluster;
   public fileSystem: efs.FileSystem;
+  public securityGroup: ec2.SecurityGroup;
   public vpc: ec2.IVpc;
   public domain?: Domain;
 
@@ -53,7 +54,6 @@ class CdkCheshireCat extends Construct {
 
     this.vpc = this.createVpc();
 
-
     if (props.domainProps) {
       this.domain = new Domain(this, 'Domain', {
         ...props.domainProps,
@@ -61,19 +61,19 @@ class CdkCheshireCat extends Construct {
       });
     }
 
-    const securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', {
+    this.securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', {
       securityGroupName: `${scope.node.id}-security-group`,
       vpc: this.vpc,
     });
-    securityGroup.addIngressRule(
-      securityGroup,
+    this.securityGroup.addIngressRule(
+      this.securityGroup,
       ec2.Port.tcp(2049),
     );
     this.fileSystem = new efs.FileSystem(this, 'MainEfs', {
       vpc: this.vpc,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
       encrypted: true,
-      securityGroup,
+      securityGroup: this.securityGroup,
       ...props.overrides?.fileSystem,
     });
 
