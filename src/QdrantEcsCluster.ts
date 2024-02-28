@@ -55,6 +55,19 @@ class QdrantEcsCluster extends Construct {
       ...props.overrides?.cluster,
     });
     const image = ecs.ContainerImage.fromRegistry('qdrant/qdrant:latest');
+    var accessPoint = new efs.AccessPoint(this, 'QdrantVolumeAccessPoint', {
+      fileSystem: props.efs,
+      path: props.fileSystemMountPointPath,
+      createAcl: {
+        ownerGid: '1000',
+        ownerUid: '1000',
+        permissions: '755',
+      },
+      posixUser: {
+        uid: '1000',
+        gid: '1000',
+      },
+    });
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'QdrantFargateService', {
       cluster: cluster,
       assignPublicIp: false,
@@ -66,12 +79,12 @@ class QdrantEcsCluster extends Construct {
         ...props.overrides?.fargateService?.taskImageOptions,
         environment: {
           QDRANT__STORAGE__STORAGE_PATH:
-                        props.fileSystemMountPointPath + '/qdrantdata',
+            props.fileSystemMountPointPath + '/qdrantdata',
           QDRANT__SERVICE__HTTP_PORT: '80',
           ...props.overrides?.fargateService?.taskImageOptions?.environment,
         },
         secrets: {
-          ...( props.qdrantApiKeySecret ? { QDRANT__SERVICE__API_KEY: ecs.Secret.fromSecretsManager(props.qdrantApiKeySecret) } : {}),
+          ...(props.qdrantApiKeySecret ? { QDRANT__SERVICE__API_KEY: ecs.Secret.fromSecretsManager(props.qdrantApiKeySecret) } : {}),
           ...props.overrides?.fargateService?.taskImageOptions?.secrets,
         },
       },
@@ -92,6 +105,11 @@ class QdrantEcsCluster extends Construct {
     this.fargateService.taskDefinition.addVolume({
       name: volumeName,
       efsVolumeConfiguration: {
+        authorizationConfig: {
+          accessPointId: accessPoint.accessPointId,
+          iam: 'ENABLED',
+        },
+        transitEncryption: 'ENABLED',
         fileSystemId: props.efs.fileSystemId,
       },
     });

@@ -61,10 +61,19 @@ class CdkCheshireCat extends Construct {
       });
     }
 
+    const securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', {
+      securityGroupName: `${scope.node.id}-security-group`,
+      vpc: this.vpc,
+    });
+    securityGroup.addIngressRule(
+      securityGroup,
+      ec2.Port.tcp(2049),
+    );
     this.fileSystem = new efs.FileSystem(this, 'MainEfs', {
       vpc: this.vpc,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
       encrypted: true,
+      securityGroup,
       ...props.overrides?.fileSystem,
     });
 

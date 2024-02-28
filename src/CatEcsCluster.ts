@@ -89,6 +89,19 @@ class CatEcsCluster extends Construct {
       ...props.overrides?.cluster,
     });
     const image = ecs.ContainerImage.fromRegistry('ghcr.io/cheshire-cat-ai/core:latest');
+    var accessPoint = new efs.AccessPoint(this, 'CatVolumeAccessPoint', {
+      fileSystem: props.efs,
+      path: props.fileSystemMountPointPath,
+      createAcl: {
+        ownerGid: '1000',
+        ownerUid: '1000',
+        permissions: '755',
+      },
+      posixUser: {
+        uid: '1000',
+        gid: '1000',
+      },
+    });
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'CatFargateService', {
       cluster: cluster,
       assignPublicIp: false,
@@ -133,6 +146,11 @@ class CatEcsCluster extends Construct {
     this.fargateService.taskDefinition.addVolume({
       name: volumeName,
       efsVolumeConfiguration: {
+        authorizationConfig: {
+          accessPointId: accessPoint.accessPointId,
+          iam: 'ENABLED',
+        },
+        transitEncryption: 'ENABLED',
         fileSystemId: props.efs.fileSystemId,
       },
     });
