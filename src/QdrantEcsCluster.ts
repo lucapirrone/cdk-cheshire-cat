@@ -71,7 +71,7 @@ class QdrantEcsCluster extends Construct {
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'QdrantFargateService', {
       cluster: cluster,
       assignPublicIp: false,
-      domainName: props.customDomain?.hostedZone ? props.customDomain?.domainName : undefined,
+      domainName: props.customDomain?.hostedZone ? props.customDomain?.fullDomain : undefined,
       domainZone: props.customDomain?.hostedZone,
       ...props.overrides?.fargateService,
       taskImageOptions: {

@@ -1,7 +1,5 @@
 import * as cm from 'aws-cdk-lib/aws-certificatemanager';
-import { ILoadBalancerV2 } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as route53targets from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
 export interface CustomDomainOverrides {
@@ -116,19 +114,5 @@ export class CustomDomain extends Construct {
     } else {
       return this.props.certificate;
     }
-  }
-
-  /**
-   * Creates DNS records (A and AAAA) records for {@link CustomDomainProps.domainName}
-   */
-  createDnsRecords(LoadBalancerTarget: ILoadBalancerV2): void {
-    if (!this.hostedZone) {return;}
-    const recordProps: route53.ARecordProps & route53.AaaaRecordProps = {
-      recordName: this.fullDomain,
-      zone: this.hostedZone,
-      target: route53.RecordTarget.fromAlias(new route53targets.LoadBalancerTarget(LoadBalancerTarget)),
-    };
-    new route53.ARecord(this, 'ARecordMain', recordProps); // IPv4
-    new route53.AaaaRecord(this, 'AaaaRecordMain', recordProps); // IPv6
   }
 }

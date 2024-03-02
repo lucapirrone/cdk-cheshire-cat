@@ -99,11 +99,6 @@ class CdkCheshireCat extends Construct {
       qdrantDomain: this.domain?.qdrantDomain,
       overrides: props.overrides?.catEcsCluster,
     });
-
-    if (this.domain) {
-      this.domain.catDomain.createDnsRecords(this.catEcsCluster.fargateService.loadBalancer);
-      this.domain.qdrantDomain.createDnsRecords(this.qdrantEcsCluster.fargateService.loadBalancer);
-    }
   }
 
   private createVpc(): ec2.IVpc {

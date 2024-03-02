@@ -105,6 +105,8 @@ class CatEcsCluster extends Construct {
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'CatFargateService', {
       cluster: cluster,
       assignPublicIp: false,
+      domainName: props.catDomain?.hostedZone ? props.catDomain?.fullDomain : undefined,
+      domainZone: props.catDomain?.hostedZone,
       runtimePlatform: {
         cpuArchitecture: ecs.CpuArchitecture.ARM64,
         operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
