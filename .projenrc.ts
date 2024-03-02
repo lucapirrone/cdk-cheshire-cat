@@ -3,6 +3,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   author: 'Luca Pirrone',
   authorAddress: 'lpirrone2000@gmail.com',
   cdkVersion: '2.130.0',
+  constructsVersion: '10.3.0',
   defaultReleaseBranch: 'main',
   jsiiVersion: '~5.0.0',
   name: 'cdk-cheshire-cat',
