@@ -1,5 +1,5 @@
-import * as path from 'path';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as efs from 'aws-cdk-lib/aws-efs';
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
@@ -33,6 +33,14 @@ interface CdkCheshireCatProps {
    * Cat Api Key from Secrets Manager
    */
   readonly catApiKeySecret?: sm.ISecret;
+  /**
+     * Qdrant docker custom image.
+     */
+  readonly qdrantDockerCustomImage?: ecs.AssetImage;
+  /**
+     * Cat docker custom image.
+     */
+  readonly catDockerCustomImage?: ecs.AssetImage;
   /**
      * Override props for every construct.
      */
@@ -81,7 +89,7 @@ class CdkCheshireCat extends Construct {
       efs: this.fileSystem,
       vpc: this.vpc,
       fileSystemMountPointPath: '/mnt/efs/fs1',
-      qdrantDockerImagePath: path.resolve(__dirname, './docker-images/qdrant'),
+      qdrantDockerCustomImage: props.qdrantDockerCustomImage,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
       customDomain: this.domain?.qdrantDomain,
       overrides: props.overrides?.qdrantEcsCluster,
@@ -90,8 +98,8 @@ class CdkCheshireCat extends Construct {
     this.catEcsCluster = new CatEcsCluster(this, 'CatEcsCluster', {
       efs: this.fileSystem,
       vpc: this.vpc,
-      fileSystemMountPointPath: '/mnt/efs/fs1',
-      catDockerImagePath: path.resolve(__dirname, './docker-images/cheshire-cat'),
+      fileSystemMountPointPath: props.catDockerCustomImage ? '/mnt/efs/fs1' : '/app/cat/plugins',
+      catDockerCustomImage: props.catDockerCustomImage,
       qdrantEcsCluster: this.qdrantEcsCluster,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
       catApiKeySecret: props.catApiKeySecret,

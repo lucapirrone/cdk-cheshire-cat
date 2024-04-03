@@ -27,9 +27,9 @@ interface QdrantEcsClusterProps {
      */
   readonly fileSystemMountPointPath: string;
   /**
-     * Qdrant docker image local path.
+     * Qdrant docker custom image.
      */
-  readonly qdrantDockerImagePath: string;
+  readonly qdrantDockerCustomImage?: ecs.AssetImage;
   /**
    * Qdrant Api Key from Secrets Manager
    */
@@ -54,10 +54,10 @@ class QdrantEcsCluster extends Construct {
       vpc: props.vpc,
       ...props.overrides?.cluster,
     });
-    const image = ecs.ContainerImage.fromRegistry('qdrant/qdrant:latest');
+    const image = props.qdrantDockerCustomImage ?? ecs.ContainerImage.fromRegistry('qdrant/qdrant:v1.7.2');
     var accessPoint = new efs.AccessPoint(this, 'QdrantVolumeAccessPoint', {
       fileSystem: props.efs,
-      path: props.fileSystemMountPointPath,
+      path: '/qdrant',
       createAcl: {
         ownerGid: '1000',
         ownerUid: '1000',
@@ -70,7 +70,7 @@ class QdrantEcsCluster extends Construct {
     });
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'QdrantFargateService', {
       cluster: cluster,
-      assignPublicIp: false,
+      assignPublicIp: !!!props.customDomain,
       domainName: props.customDomain?.hostedZone ? props.customDomain?.fullDomain : undefined,
       domainZone: props.customDomain?.hostedZone,
       ...props.overrides?.fargateService,
@@ -136,10 +136,10 @@ class QdrantEcsCluster extends Construct {
     );
     this.fargateService.targetGroup.configureHealthCheck({
       path: '/',
-      interval: cdk.Duration.seconds(120),
+      interval: cdk.Duration.seconds(60),
       healthyThresholdCount: 2,
       unhealthyThresholdCount: 2,
-      timeout: cdk.Duration.seconds(60),
+      timeout: cdk.Duration.seconds(30),
       healthyHttpCodes: '200,204',
     });
   }

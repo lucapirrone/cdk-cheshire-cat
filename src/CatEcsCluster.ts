@@ -46,9 +46,9 @@ interface CatEcsClusterProps {
      */
   readonly fileSystemMountPointPath: string;
   /**
-     * Qdrant docker image local path.
+     * Qdrant docker custom image.
      */
-  readonly catDockerImagePath: string;
+  readonly catDockerCustomImage?: ecs.AssetImage;
   /**
      * Qdrant Ecs Cluster Construct.
      */
@@ -88,10 +88,10 @@ class CatEcsCluster extends Construct {
       vpc: props.vpc,
       ...props.overrides?.cluster,
     });
-    const image = ecs.ContainerImage.fromRegistry('ghcr.io/cheshire-cat-ai/core:latest');
+    const image = props.catDockerCustomImage ?? ecs.ContainerImage.fromRegistry('ghcr.io/cheshire-cat-ai/core:latest');
     var accessPoint = new efs.AccessPoint(this, 'CatVolumeAccessPoint', {
       fileSystem: props.efs,
-      path: props.fileSystemMountPointPath,
+      path: '/cat',
       createAcl: {
         ownerGid: '1000',
         ownerUid: '1000',
@@ -104,7 +104,7 @@ class CatEcsCluster extends Construct {
     });
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'CatFargateService', {
       cluster: cluster,
-      assignPublicIp: false,
+      assignPublicIp: !!!props.catDomain,
       domainName: props.catDomain?.hostedZone ? props.catDomain?.fullDomain : undefined,
       domainZone: props.catDomain?.hostedZone,
       runtimePlatform: {
@@ -179,10 +179,10 @@ class CatEcsCluster extends Construct {
     );
     this.fargateService.targetGroup.configureHealthCheck({
       path: '/',
-      interval: cdk.Duration.seconds(120),
+      interval: cdk.Duration.seconds(60),
       healthyThresholdCount: 2,
       unhealthyThresholdCount: 2,
-      timeout: cdk.Duration.seconds(60),
+      timeout: cdk.Duration.seconds(30),
       healthyHttpCodes: '200,204,403',
     });
     props.qdrantEcsCluster.fargateService.service.connections.allowTo(
