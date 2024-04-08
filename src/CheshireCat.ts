@@ -83,7 +83,7 @@ class CdkCheshireCat extends Construct {
       fileSystemMountPointPath: '/mnt/efs/fs1',
       qdrantDockerImagePath: path.resolve(__dirname, './docker-images/qdrant'),
       qdrantApiKeySecret: props.qdrantApiKeySecret,
-      customDomain: this.domain?.qdrantDomain,
+      qdrantDomain: this.domain?.qdrantDomain,
       overrides: props.overrides?.qdrantEcsCluster,
     });
 
@@ -105,6 +105,16 @@ class CdkCheshireCat extends Construct {
     return (
       this.props.vpc ??
       new ec2.Vpc(this, 'Vpc', {
+        vpcName: `${this.node.id}-vpc`,
+        maxAzs: 3,
+        natGateways: 0,
+        subnetConfiguration: [
+          {
+            name: `${this.node.id}-public-subnet`,
+            subnetType: ec2.SubnetType.PUBLIC,
+            cidrMask: 24,
+          },
+        ],
         ...this.props.overrides?.vpc,
       })
     );
