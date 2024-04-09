@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.4.3"
+version = "1.5.1"
 requires-python = ">=3.10"
 license = { file="LICENSE" }
 authors = [
@@ -15,18 +15,20 @@ dependencies = [
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
     "qdrant_client==1.7.2",
-    "langchain==0.0.336",
-    "openai==0.27.5",
-    "cohere==4.0.4",
-    "huggingface-hub==0.13.2",
+    "langchain==0.1.10",
+    "langchain-community==0.0.27",
+    "langchain-openai",
+    "langchain-google-genai",
+    "openai==1.10.0",
+    "cohere==4.39",
+    "huggingface-hub==0.20.3",
     "beautifulsoup4==4.12.0",
     "pdfminer.six==20221105",
     "unstructured==0.5.7",
-    "tiktoken==0.3.3",
+    "tiktoken==0.5.2",
     "tomli",
-    "loguru==0.7.0",
+    "loguru==0.7.2",
     "anthropic==0.2.9",
-    "google-generativeai==0.1.0rc3",
     "gunicorn==20.1.0",
     "uvicorn[standard]==0.20.0",
     "text_generation==0.6.1",
@@ -38,7 +40,8 @@ dependencies = [
     "pylint-actions",
     "pytest",
     "httpx",
-    "fastembed==0.1.1"
+    "fastembed==0.2.2",
+    "rapidfuzz==3.6.1",
 ]
 
 [tool.coverage.run]

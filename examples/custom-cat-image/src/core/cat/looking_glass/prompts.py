@@ -1,15 +1,17 @@
 
-from typing import List
+from typing import Union, Dict
 
 from langchain.agents.tools import BaseTool
 from langchain.prompts import StringPromptTemplate
+
+from cat.experimental.form import CatForm
 
 
 class ToolPromptTemplate(StringPromptTemplate):
     # The template to use
     template: str
     # The list of tools available
-    tools: List[BaseTool]
+    procedures: Dict[str,Union[BaseTool, CatForm.__class__]]
 
     def format(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
@@ -22,9 +24,16 @@ class ToolPromptTemplate(StringPromptTemplate):
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
-        kwargs["tools"] = "\n".join([f"{tool.name}: {tool.description}" for tool in self.tools])
+        kwargs["tools"] = ""
+        for proc in self.procedures.values():
+            kwargs["tools"] += f" - {proc.name}: {proc.description}\n"
+            # if len(tool.examples) > 0:
+            #     kwargs["tools"] += f"\tExamples of questions for {tool.name}:\n"
+            #     for example in tool.examples:
+            #         kwargs["tools"] += f"\t - \"{example}\"\n"
+            #kwargs["tools"] += "\n"
         # Create a list of tool names for the tools provided
-        kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
+        kwargs["tool_names"] = ", ".join(self.procedures.keys())
 
         return self.template.format(**kwargs)
 
@@ -32,8 +41,7 @@ class ToolPromptTemplate(StringPromptTemplate):
 TOOL_PROMPT = """Answer the following question: `{input}`
 You can only reply using these tools:
 
-{tools}
-none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
+{tools} - none_of_the_others: Use this tool if none of the others tools help. Input is always None.
 
 If you want to use tools, use the following format:
 Action: the name of the action to take, should be one of [{tool_names}]
