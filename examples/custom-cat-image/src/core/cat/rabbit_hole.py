@@ -2,8 +2,9 @@ import os
 import time
 import json
 import mimetypes
+import httpx
 from typing import List, Union
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 
@@ -107,8 +108,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 400,
-            chunk_overlap: int = 100,
+            chunk_size: int = 512,
+            chunk_overlap: int = 128,
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -121,9 +122,9 @@ class RabbitHole:
             The file can be a path passed as a string or an `UploadFile` object if the document is ingested using the
             `rabbithole` endpoint.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
 
         Notes
         ----------
@@ -158,8 +159,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 400,
-            chunk_overlap: int = 100
+            chunk_size: int = 512,
+            chunk_overlap: int = 128
     ) -> List[Document]:
         """Load and convert files to Langchain `Document`.
 
@@ -172,9 +173,9 @@ class RabbitHole:
             The file can be either a string path if loaded programmatically, a FastAPI `UploadFile`
             if coming from the `/rabbithole/` endpoint or a URL if coming from the `/rabbithole/web` endpoint.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
 
         Returns
         -------
@@ -202,21 +203,19 @@ class RabbitHole:
             is_url = all([parsed_file.scheme, parsed_file.netloc])
 
             if is_url:
-                # Define mime type and source of url
-                content_type = "text/html"
-                source = file
-
                 # Make a request with a fake browser name
-                request = Request(file, headers={"User-Agent": "Magic Browser"})
+                request = httpx.get(file, headers={"User-Agent": "Magic Browser"})
+
+                # Define mime type and source of url
+                content_type = request.headers["Content-Type"].split(";")[0]
+                source = file
 
                 try:
                     # Get binary content of url
-                    with urlopen(request) as response:
-                        file_bytes = response.read()
+                    file_bytes = request.content
                 except HTTPError as e:
                     log.error(e)
             else:
-
                 # Get mime type from file extension and source
                 content_type = mimetypes.guess_type(file)[0]
                 source = os.path.basename(file)
@@ -242,8 +241,8 @@ class RabbitHole:
             file_bytes: str,
             source: str = None,
             content_type: str = "text/plain",
-            chunk_size: int = 400,
-            chunk_overlap: int = 100
+            chunk_size: int = 512,
+            chunk_overlap: int = 128
         ) -> List[Document]:
         """Convert string to Langchain `Document`.
 
@@ -259,9 +258,9 @@ class RabbitHole:
         content_type:
             Mimetype of content.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
         send_message: bool
             If true will send parsing message information to frontend.
 
@@ -331,7 +330,9 @@ class RabbitHole:
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
                 perc_read = int(d / len(docs) * 100)
-                stray.send_ws_message(f"Read {perc_read}% of {source}")
+                read_message = f"Read {perc_read}% of {source}"
+                stray.send_ws_message(read_message)
+                log.warning(read_message)
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
@@ -347,7 +348,7 @@ class RabbitHole:
                     doc.metadata,
                 )
 
-                log.info(f"Inserted into memory({inserting_info})")
+                log.info(f"Inserted into memory ({inserting_info})")
             else:
                 log.info(f"Skipped memory insertion of empty doc ({inserting_info})")
 
@@ -360,7 +361,7 @@ class RabbitHole:
 
         stray.send_ws_message(finished_reading_message)
 
-        print(f"\n\nDone uploading {source}")
+        log.warning(f"Done uploading {source}")
 
 
     def __split_text(self, stray, text, chunk_size, chunk_overlap):
@@ -374,9 +375,9 @@ class RabbitHole:
         text : str
             Content of the loaded file.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
 
         Returns
         -------
@@ -400,12 +401,16 @@ class RabbitHole:
             "before_rabbithole_splits_text", text, cat=stray
         )
 
-        # split the documents using chunk_size and chunk_overlap
-        text_splitter = RecursiveCharacterTextSplitter(
+        text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
+            encoding_name = "cl100k_base",
+            keep_separator=True,
+            strip_whitespace = True
         )
+
+        log.info(f"Chunk size: {chunk_size}, chunk overlap: {chunk_overlap}")
         # split text
         docs = text_splitter.split_documents(text)
         # remove short texts (page numbers, isolated words, etc.)

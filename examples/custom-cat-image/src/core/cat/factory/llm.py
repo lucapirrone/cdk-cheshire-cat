@@ -1,13 +1,21 @@
-import langchain
-from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
-from langchain.llms import OpenAI, AzureOpenAI
-from langchain.llms.ollama import Ollama
+from langchain_community.chat_models import AzureChatOpenAI
+from langchain_community.llms import (
+    OpenAI,
+    AzureOpenAI,
+    Cohere,
+    HuggingFaceTextGenInference,
+    HuggingFaceEndpoint,
+)
+from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-from typing import Dict, List, Type
+from .ollama_utils import _create_stream_patch, _acreate_stream_patch
+from typing import Type
 import json
 from pydantic import BaseModel, ConfigDict
 
-from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
+from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOllama
+from cat.mad_hatter.mad_hatter import MadHatter
 
 
 # Base class to manage LLM configuration.
@@ -17,9 +25,7 @@ class LLMSettings(BaseModel):
 
     # This is related to pydantic, because "model_*" attributes are protected.
     # We deactivate the protection because langchain relies on several "model_*" named attributes
-    model_config = ConfigDict(
-        protected_namespaces=()
-    )
+    model_config = ConfigDict(protected_namespaces=())
 
     # instantiate an LLM from configuration
     @classmethod
@@ -37,9 +43,8 @@ class LLMDefaultConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "Default Language Model",
-            "description":
-                "A dumb LLM just telling that the Cat is not configured. "
-                "There will be a nice LLM here once consumer hardware allows it.",
+            "description": "A dumb LLM just telling that the Cat is not configured. "
+            "There will be a nice LLM here once consumer hardware allows it.",
             "link": "",
         }
     )
@@ -73,7 +78,7 @@ class LLMCustomConfig(LLMSettings):
     )
 
 
-class LLMLlamaCppConfig(LLMSettings):
+class LLMOpenAICompatibleConfig(LLMSettings):
     url: str
     temperature: float = 0.01
     max_tokens: int = 512
@@ -85,8 +90,8 @@ class LLMLlamaCppConfig(LLMSettings):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "Self-hosted llama-cpp-python",
-            "description": "Self-hosted llama-cpp-python compatible LLM",
+            "humanReadableName": "OpenAI-compatible API",
+            "description": "Configuration for self-hosted OpenAI-compatible API server, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM",
             "link": "",
         }
     )
@@ -95,7 +100,7 @@ class LLMLlamaCppConfig(LLMSettings):
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
-    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
     streaming: bool = True
     _pyclass: Type = ChatOpenAI
 
@@ -111,7 +116,7 @@ class LLMOpenAIChatConfig(LLMSettings):
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo-instruct"  # used instead of text-davinci-003 since it deprecated
-    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
     streaming: bool = True
     _pyclass: Type = OpenAI
 
@@ -128,12 +133,12 @@ class LLMOpenAIConfig(LLMSettings):
 class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-35-turbo"  # or gpt-4, use only chat models !
-    openai_api_base: str
+    azure_endpoint: str
     openai_api_type: str = "azure"
     # Dont mix api versions https://github.com/hwchase17/langchain/issues/4775
     openai_api_version: str = "2023-05-15"
 
-    deployment_name: str
+    azure_deployment: str
     streaming: bool = True
     _pyclass: Type = AzureChatOpenAI
 
@@ -149,13 +154,13 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
 # https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
 class LLMAzureOpenAIConfig(LLMSettings):
     openai_api_key: str
-    openai_api_base: str
+    azure_endpoint: str
     api_type: str = "azure"
     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
     # Current supported versions 2022-12-01, 2023-03-15-preview, 2023-05-15
     # Don't mix api versions: https://github.com/hwchase17/langchain/issues/4775
     api_version: str = "2023-05-15"
-    deployment_name: str = "gpt-35-turbo-instruct"  # Model "comming soon" according to microsoft
+    azure_deployment: str = "gpt-35-turbo-instruct"
     model_name: str = "gpt-35-turbo-instruct"  # Use only completion models !
     streaming: bool = True
     _pyclass: Type = AzureOpenAI
@@ -173,7 +178,7 @@ class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
     model: str = "command"
     streaming: bool = True
-    _pyclass: Type = langchain.llms.Cohere
+    _pyclass: Type = Cohere
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -193,7 +198,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
     typical_p: float = 0.95
     temperature: float = 0.01
     repetition_penalty: float = 1.03
-    _pyclass: Type = langchain.llms.HuggingFaceTextGenInference
+    _pyclass: Type = HuggingFaceTextGenInference
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -203,13 +208,17 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
         }
     )
 
-
+# https://api.python.langchain.com/en/latest/llms/langchain_community.llms.huggingface_endpoint.HuggingFaceEndpoint.html
 class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
-    task: str = "text2text-generation"
-    streaming: bool = True
-    _pyclass: Type = langchain.llms.HuggingFaceEndpoint
+    task: str = "text-generation"
+    max_new_tokens: int = 512
+    top_k: int = None
+    top_p: float = 0.95
+    temperature: float = 0.8
+    return_full_text: bool = False
+    _pyclass: Type = HuggingFaceEndpoint
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -220,6 +229,12 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     )
 
 
+# monkey patch to fix stops sequences
+OllamaFix: Type = CustomOllama
+OllamaFix._create_stream = _create_stream_patch
+OllamaFix._acreate_stream = _acreate_stream_patch
+
+
 class LLMOllamaConfig(LLMSettings):
     base_url: str
     model: str = "llama2"
@@ -228,7 +243,7 @@ class LLMOllamaConfig(LLMSettings):
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = Ollama
+    _pyclass: Type = OllamaFix
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -239,26 +254,80 @@ class LLMOllamaConfig(LLMSettings):
     )
 
 
-SUPPORTED_LANGUAGE_MODELS = [
-    LLMDefaultConfig,
-    LLMCustomConfig,
-    LLMLlamaCppConfig,
-    LLMOpenAIChatConfig,
-    LLMOpenAIConfig,
-    LLMCohereConfig,
-    LLMHuggingFaceEndpointConfig,
-    LLMHuggingFaceTextGenInferenceConfig,
-    LLMAzureOpenAIConfig,
-    LLMAzureChatOpenAIConfig,
-    LLMOllamaConfig
-]
+class LLMGeminiChatConfig(LLMSettings):
+    """Configuration for the Gemini large language model (LLM).
 
-# LLM_SCHEMAS contains metadata to let any client know
-# which fields are required to create the language model.
-LLM_SCHEMAS = {}
-for config_class in SUPPORTED_LANGUAGE_MODELS:
-    schema = config_class.model_json_schema()
+    This class inherits from the `LLMSettings` class and provides default values for the following attributes:
 
-    # useful for clients in order to call the correct config endpoints
-    schema["languageModelName"] = schema["title"]
-    LLM_SCHEMAS[schema["title"]] = schema
+    * `google_api_key`: The Google API key used to access the Google Natural Language Processing (NLP) API.
+    * `model`: The name of the LLM model to use. In this case, it is set to "gemini".
+    * `temperature`: The temperature of the model, which controls the creativity and variety of the generated responses.
+    * `top_p`: The top-p truncation value, which controls the probability of the generated words.
+    * `top_k`: The top-k truncation value, which controls the number of candidate words to consider during generation.
+    * `max_output_tokens`: The maximum number of tokens to generate in a single response.
+
+    The `LLMGeminiChatConfig` class is used to create an instance of the Gemini LLM model, which can be used to generate text in natural language.
+    """
+
+    google_api_key: str
+    model: str = "gemini-pro"
+    temperature: float = 0.1
+    top_p: int = 1
+    top_k: int = 1
+    max_output_tokens: int = 29000
+
+    _pyclass: Type = ChatGoogleGenerativeAI
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Google Gemini",
+            "description": "Configuration for Gemini",
+            "link": "https://deepmind.google/technologies/gemini",
+        }
+    )
+
+
+def get_allowed_language_models():
+
+    list_llms_default = [
+        LLMOpenAIChatConfig,
+        LLMOpenAIConfig,
+        LLMGeminiChatConfig,
+        LLMCohereConfig,
+        LLMAzureOpenAIConfig,
+        LLMAzureChatOpenAIConfig,
+        LLMHuggingFaceEndpointConfig,
+        LLMHuggingFaceTextGenInferenceConfig,
+        LLMOllamaConfig,
+        LLMOpenAICompatibleConfig,
+        LLMCustomConfig,
+        LLMDefaultConfig,
+    ]
+
+    mad_hatter_instance = MadHatter()
+    list_llms = mad_hatter_instance.execute_hook(
+        "factory_allowed_llms", list_llms_default, cat=None
+    )
+    return list_llms
+
+
+def get_llm_from_name(name_llm: str):
+    """Find the llm adapter class by name"""
+    for cls in get_allowed_language_models():
+        if cls.__name__ == name_llm:
+            return cls
+    return None
+
+
+def get_llms_schemas():
+
+    # LLM_SCHEMAS contains metadata to let any client know
+    # which fields are required to create the language model.
+    LLM_SCHEMAS = {}
+    for config_class in get_allowed_language_models():
+        schema = config_class.model_json_schema()
+        # useful for clients in order to call the correct config endpoints
+        schema["languageModelName"] = schema["title"]
+        LLM_SCHEMAS[schema["title"]] = schema
+
+    return LLM_SCHEMAS

@@ -1,6 +1,6 @@
 import os
 import shutil
-from tests.utils import get_embedded_tools, create_mock_plugin_zip
+from tests.utils import create_mock_plugin_zip
 
 # TODO: registry responses here should be mocked, at the moment we are actually calling the service
 
@@ -30,7 +30,6 @@ def test_list_registry_plugins_by_query(client):
     }
     response = client.get("/plugins", params=params)
     json = response.json()
-    print(json)
 
     assert response.status_code == 200
     assert json["filters"]["query"] == params["query"]
