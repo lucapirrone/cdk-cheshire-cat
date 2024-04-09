@@ -112,6 +112,8 @@ class CatEcsCluster extends Construct {
         operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
       },
       ...props.overrides?.fargateService,
+      protocol: props.catDomain?.hostedZone ? elb2.ApplicationProtocol.HTTPS : elb2.ApplicationProtocol.HTTP,
+      redirectHTTP: props.catDomain?.hostedZone ? true : false,
       taskImageOptions: {
         image,
         ...props.overrides?.fargateService?.taskImageOptions,
@@ -131,18 +133,6 @@ class CatEcsCluster extends Construct {
         },
       },
     });
-    if (props.catDomain && props.catDomain.certificate) {
-      this.fargateService.loadBalancer.addListener('CatHttpsListener', {
-        protocol: elb2.ApplicationProtocol.HTTPS,
-        port: 443,
-        certificates: [
-          elb2.ListenerCertificate.fromCertificateManager(props.catDomain.certificate),
-        ],
-        defaultTargetGroups: [
-          this.fargateService.targetGroup,
-        ],
-      });
-    }
 
     const volumeName = 'mainEfs';
     this.fargateService.taskDefinition.addVolume({
