@@ -11,7 +11,9 @@ import { CustomDomain } from './CustomDomain';
 
 interface QdrantEcsClusterOverrides {
   readonly cluster?: ecs.ClusterProps;
-  readonly fargateService?: ecsPatterns.ApplicationLoadBalancedFargateServiceProps;
+  readonly fargateService?: Omit<ecsPatterns.ApplicationLoadBalancedFargateServiceProps, 'taskImageOptions'> & {
+    taskImageOptions: Omit<ecsPatterns.ApplicationLoadBalancedTaskImageOptions, 'image'>;
+  };
 }
 interface QdrantEcsClusterProps {
   /**
@@ -27,9 +29,9 @@ interface QdrantEcsClusterProps {
      */
   readonly fileSystemMountPointPath: string;
   /**
-     * Qdrant docker custom image.
+     * Custom Qdrant container docker image.
      */
-  readonly qdrantDockerCustomImage?: ecs.AssetImage;
+  readonly customQdrantContainerImage?: ecs.ContainerImage;
   /**
    * Qdrant Api Key from Secrets Manager
    */
@@ -54,7 +56,7 @@ class QdrantEcsCluster extends Construct {
       vpc: props.vpc,
       ...props.overrides?.cluster,
     });
-    const image = props.qdrantDockerCustomImage ?? ecs.ContainerImage.fromRegistry('qdrant/qdrant:v1.7.2');
+    const image = props.customQdrantContainerImage ?? ecs.ContainerImage.fromRegistry('qdrant/qdrant:v1.7.2');
     var accessPoint = new efs.AccessPoint(this, 'QdrantVolumeAccessPoint', {
       fileSystem: props.efs,
       path: '/qdrant',

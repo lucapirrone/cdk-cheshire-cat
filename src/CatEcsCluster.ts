@@ -30,7 +30,9 @@ type CatEnvVariables = {
 
 interface CatEcsClusterOverrides {
   readonly cluster?: ecs.ClusterProps;
-  readonly fargateService?: ecsPatterns.ApplicationLoadBalancedFargateServiceProps;
+  readonly fargateService?: Omit<ecsPatterns.ApplicationLoadBalancedFargateServiceProps, 'taskImageOptions'> & {
+    taskImageOptions: Omit<ecsPatterns.ApplicationLoadBalancedTaskImageOptions, 'image'>;
+  };
 }
 interface CatEcsClusterProps {
   /**
@@ -46,9 +48,9 @@ interface CatEcsClusterProps {
      */
   readonly fileSystemMountPointPath: string;
   /**
-     * Qdrant docker custom image.
+     * Custom Cat container docker image.
      */
-  readonly catDockerCustomImage?: ecs.AssetImage;
+  readonly customCatContainerImage?: ecs.ContainerImage;
   /**
      * Qdrant Ecs Cluster Construct.
      */
@@ -88,7 +90,7 @@ class CatEcsCluster extends Construct {
       vpc: props.vpc,
       ...props.overrides?.cluster,
     });
-    const image = props.catDockerCustomImage ?? ecs.ContainerImage.fromRegistry('ghcr.io/cheshire-cat-ai/core:latest');
+    const image = props.customCatContainerImage ?? ecs.ContainerImage.fromRegistry('ghcr.io/cheshire-cat-ai/core:latest');
     var accessPoint = new efs.AccessPoint(this, 'CatVolumeAccessPoint', {
       fileSystem: props.efs,
       path: '/cat',

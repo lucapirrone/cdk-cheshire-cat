@@ -34,13 +34,19 @@ interface CdkCheshireCatProps {
    */
   readonly catApiKeySecret?: sm.ISecret;
   /**
-     * Qdrant docker custom image.
+     * Custom Qdrant container docker image.
      */
-  readonly qdrantDockerCustomImage?: ecs.AssetImage;
+  readonly customQdrantContainerImage?: ecs.ContainerImage;
   /**
-     * Cat docker custom image.
+     * Custom Cat container docker image.
      */
-  readonly catDockerCustomImage?: ecs.AssetImage;
+  readonly customCatContainerImage?: ecs.ContainerImage;
+  /**
+     * Persist cat plugins.
+     * Enabling it will ignore the plugins inserted into the docker image
+     * Default: true
+     */
+  readonly persistCatPlugins?: boolean;
   /**
      * Override props for every construct.
      */
@@ -56,7 +62,7 @@ class CdkCheshireCat extends Construct {
   public vpc: ec2.IVpc;
   public domain?: Domain;
 
-  constructor(scope: Construct, id: string, props: CdkCheshireCatProps = {}) {
+  constructor(scope: Construct, id: string, { persistCatPlugins = true, ...props }: CdkCheshireCatProps = {}) {
     super(scope, id);
     this.props = props;
 
@@ -89,7 +95,7 @@ class CdkCheshireCat extends Construct {
       efs: this.fileSystem,
       vpc: this.vpc,
       fileSystemMountPointPath: '/mnt/efs/fs1',
-      qdrantDockerCustomImage: props.qdrantDockerCustomImage,
+      customQdrantContainerImage: props.customQdrantContainerImage,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
       qdrantDomain: this.domain?.qdrantDomain,
       overrides: props.overrides?.qdrantEcsCluster,
@@ -98,8 +104,8 @@ class CdkCheshireCat extends Construct {
     this.catEcsCluster = new CatEcsCluster(this, 'CatEcsCluster', {
       efs: this.fileSystem,
       vpc: this.vpc,
-      fileSystemMountPointPath: props.catDockerCustomImage ? '/mnt/efs/fs1' : '/app/cat/plugins',
-      catDockerCustomImage: props.catDockerCustomImage,
+      fileSystemMountPointPath: persistCatPlugins ? '/app/cat/plugins' : '/mnt/efs/fs1',
+      customCatContainerImage: props.customCatContainerImage,
       qdrantEcsCluster: this.qdrantEcsCluster,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
       catApiKeySecret: props.catApiKeySecret,

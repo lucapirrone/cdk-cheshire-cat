@@ -8,26 +8,14 @@ export class CustomCatImage extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const image = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'))
     const qdrantImage = ecs.ContainerImage.fromRegistry('qdrant/qdrant:v1.7.2');
+    const catImage = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'));
 
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
-      overrides: {
-        catEcsCluster: {
-          fargateService: {
-            taskImageOptions: {
-              image
-            }
-          }
-        },
-        qdrantEcsCluster: {
-          fargateService: {
-            taskImageOptions: {
-              image: qdrantImage
-            }
-          }
-        }
-      }
+      customQdrantContainerImage: qdrantImage,
+      customCatContainerImage: catImage,
+      // Disable plugins persistence to include local plugins
+      persistCatPlugins: false
     });
 
     new CfnOutput(this, "CatHost", {

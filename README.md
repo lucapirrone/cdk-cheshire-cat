@@ -100,19 +100,13 @@ export class CustomCatImage extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
   
+    const qdrantImage = ecs.ContainerImage.fromRegistry('qdrant/qdrant:v1.7.2');
     // You have to link the Dockerfile folder, for example ./core
-    const image = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'))
+    const catImage = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'));
 
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
-      overrides: {
-        catEcsCluster: {
-          fargateService: {
-            taskImageOptions: {
-              image
-            }
-          }
-        }
-      }
+      customQdrantContainerImage: qdrantImage,
+      customCatContainerImage: catImage
     });
 
     new CfnOutput(this, "CatHost", {
@@ -137,34 +131,21 @@ You can set the Cheshire Cat and Qdrant Server api keys by passing the [AWS Secr
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { CdkCheshireCat } from 'cdk-cheshire-cat';
-import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as cdk from 'aws-cdk-lib'
-import * as path from 'path'
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 
 export class SecureCat extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const image = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'))
-
     const catApiKeySecret = new sm.Secret(this, 'CatApiKey', {
       secretName: 'cat-api-key'
-    })
+    });
     const qdrantApiKeySecret = new sm.Secret(this, 'QdrantApiKey', {
       secretName: 'qdrant-api-key'
-    })
+    });
 
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
-      overrides: {
-        catEcsCluster: {
-          fargateService: {
-            taskImageOptions: {
-              image
-            }
-          }
-        }
-      },
       catApiKeySecret,
       qdrantApiKeySecret,
     });
@@ -200,9 +181,8 @@ export class SecureCat extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const catApiKeySecret = sm.Secret.fromSecretCompleteArn(this, 'CatApiKey', "arn:aws:secretsmanager:<Region>:<AccountId>:secret:SecretName-6RandomCharacters")
-    const qdrantApiKeySecret = sm.Secret.fromSecretCompleteArn(this, 'QdrantApiKey', "arn:aws:secretsmanager:<Region>:<AccountId>:secret:SecretName-6RandomCharacters")
-
+    const catApiKeySecret = sm.Secret.fromSecretCompleteArn(this, 'CatApiKey', "arn:aws:secretsmanager:<Region>:<AccountId>:secret:SecretName-6RandomCharacters");
+    const qdrantApiKeySecret = sm.Secret.fromSecretCompleteArn(this, 'QdrantApiKey', "arn:aws:secretsmanager:<Region>:<AccountId>:secret:SecretName-6RandomCharacters");
 
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
       catApiKeySecret,
@@ -268,7 +248,7 @@ const app = new cdk.App();
 new DomainCat(app, 'domain-cat', { env: { account: '000000000000', region: 'eu-central-1' } });
 ```
 
-If you want
+if you want to use a domain not hosted in route53 you will have to manually [create the certificate](https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html) and import it into the stack in this way:
 
 ```typescript
 import * as cdk from 'aws-cdk-lib';
@@ -276,12 +256,13 @@ import { DomainCat } from './stack';
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { CdkCheshireCat } from 'cdk-cheshire-cat';
+import * as cm from 'aws-cdk-lib/aws-certificatemanager'
 
 export class DomainCat extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const domainCert = cm.Certificate.fromCertificateArn(this, 'Certificate', 'arn:aws:acm:region:account:certificate/certificate_ID')
+    const domainCert = cm.Certificate.fromCertificateArn(this, 'Certificate', 'arn:aws:acm:region:account:certificate/certificate_ID');
 
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
       domainProps: {
