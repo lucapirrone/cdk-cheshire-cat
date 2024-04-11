@@ -3,8 +3,9 @@ import asyncio
 import traceback
 from typing import Literal, get_args
 
-from langchain.llms.base import BaseLLM
-from langchain.chat_models.base import BaseChatModel
+from langchain.docstore.document import Document
+from langchain_community.llms import BaseLLM
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from fastapi import WebSocket
 
@@ -14,7 +15,7 @@ from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 
 
-MAX_TEXT_INPUT = 500
+MAX_TEXT_INPUT = 2000
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # The Stray cat goes around tools and hook, making troubles
@@ -24,8 +25,8 @@ class StrayCat:
     def __init__(
             self,
             user_id: str,
+            main_loop,
             ws: WebSocket = None,
-            event_loop = None
         ):
         self.__user_id = user_id
         self.__ws_messages = asyncio.Queue()
@@ -34,12 +35,9 @@ class StrayCat:
         # attribute to store ws connection
         self.ws = ws
 
-        # event loop
-        if event_loop is None:
-            self.__loop = asyncio.get_event_loop()
-        else:
-            self.__loop = event_loop
+        self.__main_loop = main_loop
 
+        self.__loop = asyncio.new_event_loop()
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):
         
@@ -65,31 +63,38 @@ class StrayCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self.__loop.create_task(
-                self.__ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "name": "GenericError",
-                        "description": content
-                    }
-                )
+
+            # Call put_nowait in the uvicorn main loop is necessary
+            # as the ws_mesages queue
+
+            self.__main_loop.call_soon_threadsafe(
+                self.__ws_messages.put_nowait,
+                {
+                    "type": msg_type,
+                    "name": "GenericError",
+                    "description": content
+                }
             )
         else:
-            self.__loop.create_task(
-                self.__ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "content": content
-                    }
-                )
+            self.__main_loop.call_soon_threadsafe(
+                self.__ws_messages.put_nowait,
+                {
+                    "type": msg_type,
+                    "content": content
+                }
             )
 
-
-    def recall_relevant_memories_to_working_memory(self):
+    def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
 
         The method retrieves the relevant memories from the vector collections that are given as context to the LLM.
         Recalled memories are stored in the working memory.
+
+        Parameters
+        ----------
+        query : str, optional
+        The query used to make a similarity search in the Cat's vector memories. If not provided, the query
+        will be derived from the user's message.
 
         Notes
         -----
@@ -105,11 +110,15 @@ class StrayCat:
         before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
-        recall_query = self.working_memory["user_message_json"]["text"]
+        recall_query = query
+
+        if query is None:
+            # If query is not provided, use the user's message as the query
+            recall_query = self.working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
         recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query, cat=self)
-        log.info(f'Recall query: "{recall_query}"')
+        log.info(f"Recall query: '{recall_query}'")
 
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
@@ -165,7 +174,6 @@ class StrayCat:
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=self)
 
-
     def llm(self, prompt: str, stream: bool = False) -> str:
         """Generate a response using the LLM model.
 
@@ -196,8 +204,7 @@ class StrayCat:
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-
-    def __call__(self, user_message_json):
+    async def __call__(self, user_message_json):
             """Call the Cat instance.
 
             This method is called on the user's message received from the client.
@@ -231,20 +238,9 @@ class StrayCat:
                 cat=self
             )
 
-            # TODO: move inside a function
-            # split text after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to declarative memory
-            if len(self.working_memory["user_message_json"]["text"]) > MAX_TEXT_INPUT:
-                index = MAX_TEXT_INPUT
-                char = self.working_memory["user_message_json"]["text"][index]
-                while not char.isspace() and index > 0:
-                    index -= 1
-                    char = self.working_memory["user_message_json"]["text"][index]
-                if index <= 0:
-                    index = MAX_TEXT_INPUT
-                self.working_memory["user_message_json"]["text"], to_declarative_memory = self.working_memory["user_message_json"]["text"][:index], self.working_memory["user_message_json"]["text"][index:]
-                docs = self.rabbit_hole.string_to_docs(stray=self, file_bytes=to_declarative_memory, content_type="text/plain")
-                self.rabbit_hole.store_documents(self, docs=docs, source="")
-
+            if len(user_message_json["text"]) > MAX_TEXT_INPUT:
+                # TODO: reflex hook!
+                self.send_long_message_to_declarative()
 
             # recall episodic and declarative memories from vector collections
             #   and store them in working_memory
@@ -267,7 +263,7 @@ class StrayCat:
             
             # reply with agent
             try:
-                cat_message = self.agent_manager.execute_agent(self)
+                cat_message = await self.agent_manager.execute_agent(self)
             except Exception as e:
                 # This error happens when the LLM
                 #   does not respect prompt instructions.
@@ -291,14 +287,24 @@ class StrayCat:
 
             user_message = self.working_memory["user_message_json"]["text"]
 
+            doc = Document(
+                page_content=user_message,
+                metadata={
+                    "source": self.user_id,
+                    "when": time.time()
+                }
+            )
+            doc = self.mad_hatter.execute_hook(
+                "before_cat_stores_episodic_memory", doc, cat=self
+            )
             # store user message in episodic memory
             # TODO: vectorize and store also conversation chunks
             #   (not raw dialog, but summarization)
             user_message_embedding = self.embedder.embed_documents([user_message])
             _ = self.memory.vectors.episodic.add_point(
-                user_message,
+                doc.page_content,
                 user_message_embedding[0],
-                {"source": self.user_id, "when": time.time()},
+                doc.metadata,
             )
 
             # build data structure for output (response and why with memories)
@@ -310,10 +316,10 @@ class StrayCat:
             final_output = {
                 "type": "chat",
                 "user_id": self.user_id,
-                "content": cat_message.get("output"),
+                "content": str(cat_message.get("output")),
                 "why": {
                     "input": cat_message.get("input"),
-                    "intermediate_steps": cat_message.get("intermediate_steps"),
+                    "intermediate_steps": cat_message.get("intermediate_steps", []),
                     "memory": {
                         "episodic": episodic_report,
                         "declarative": declarative_report,
@@ -330,13 +336,35 @@ class StrayCat:
 
             return final_output
 
+    def run(self, user_message_json):
+        return self.loop.run_until_complete(
+            self.__call__(user_message_json)
+        )
+
+    def send_long_message_to_declarative(self):
+        #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
+        index = MAX_TEXT_INPUT
+        query = self.working_memory["user_message_json"]["text"]
+        char = query[index]
+        while not char.isspace() and index > 0:
+            index -= 1
+            char = query[index]
+        if index <= 0:
+            index = MAX_TEXT_INPUT
+        query, to_declarative_memory = query[:index], query
+        self.working_memory["user_message_json"]["text"] = query # shortens working memory content
+
+        # TODO: can we run ingestion in the background?
+        docs = self.rabbit_hole.string_to_docs(
+            stray=self,
+            file_bytes=to_declarative_memory,
+            content_type="text/plain"
+        )
+        self.rabbit_hole.store_documents(self, docs=docs, source="")
+
     @property
     def user_id(self):
         return self.__user_id
-    
-    @property
-    def ws_messages(self):
-        return self.__ws_messages
 
     @property
     def _llm(self):
@@ -361,3 +389,7 @@ class StrayCat:
     @property
     def agent_manager(self):
         return CheshireCat().agent_manager
+
+    @property
+    def loop(self):
+        return self.__loop

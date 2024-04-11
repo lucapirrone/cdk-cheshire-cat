@@ -37,7 +37,7 @@ interface QdrantEcsClusterProps {
   /**
    * @see {@link CustomDomain}
    */
-  readonly customDomain?: CustomDomain;
+  readonly qdrantDomain?: CustomDomain;
   /**
      * Override props for every construct.
      */
@@ -70,9 +70,9 @@ class QdrantEcsCluster extends Construct {
     });
     this.fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'QdrantFargateService', {
       cluster: cluster,
-      assignPublicIp: !!!props.customDomain,
-      domainName: props.customDomain?.hostedZone ? props.customDomain?.fullDomain : undefined,
-      domainZone: props.customDomain?.hostedZone,
+      assignPublicIp: true,
+      domainName: props.qdrantDomain?.hostedZone ? props.qdrantDomain?.fullDomain : undefined,
+      domainZone: props.qdrantDomain?.hostedZone,
       ...props.overrides?.fargateService,
       taskImageOptions: {
         image,
@@ -89,12 +89,12 @@ class QdrantEcsCluster extends Construct {
         },
       },
     });
-    if (props.customDomain && props.customDomain.certificate) {
+    if (props.qdrantDomain && props.qdrantDomain.certificate) {
       this.fargateService.loadBalancer.addListener('QdrantHttpsListener', {
         protocol: elb2.ApplicationProtocol.HTTPS,
         port: 443,
         certificates: [
-          elb2.ListenerCertificate.fromCertificateManager(props.customDomain.certificate),
+          elb2.ListenerCertificate.fromCertificateManager(props.qdrantDomain.certificate),
         ],
         defaultTargetGroups: [
           this.fargateService.targetGroup,

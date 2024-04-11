@@ -28,6 +28,7 @@ def test_create_plugin_wrong_folder():
         
     assert f"Cannot create" in str(e.value)
 
+
 def test_create_plugin_empty_folder():
 
     path = "tests/mocks/empty_folder"
@@ -63,7 +64,7 @@ def test_activate_plugin(plugin):
     # activate it
     plugin.activate()
 
-    assert plugin.active == True
+    assert plugin.active is True
 
     # hooks
     assert len(plugin.hooks) == 2
@@ -80,9 +81,13 @@ def test_activate_plugin(plugin):
     assert isinstance(tool, CatTool)
     assert tool.plugin_id == "mock_plugin"
     assert tool.name == "mock_tool"
-    assert "mock_tool" in tool.description
+    assert tool.description == "Used to test mock tools. Input is the topic."
     assert isfunction(tool.func)
-    assert tool.return_direct == True
+    assert tool.return_direct is True
+    # tool examples found
+    assert len(tool.start_examples) == 2
+    assert "mock tool example 1" in tool.start_examples
+    assert "mock tool example 2" in tool.start_examples
 
 
 def test_deactivate_plugin(plugin):
@@ -93,7 +98,7 @@ def test_deactivate_plugin(plugin):
     # deactivate it
     plugin.deactivate()
 
-    assert plugin.active == False
+    assert plugin.active is False
     
     # hooks and tools
     assert len(plugin.hooks) == 0
@@ -103,7 +108,7 @@ def test_deactivate_plugin(plugin):
 def test_settings_schema(plugin):
 
     settings_schema = plugin.settings_schema()
-    assert type(settings_schema) == dict
+    assert isinstance(settings_schema, dict)
     assert settings_schema["properties"] == {}
     assert settings_schema["title"] == "PluginSettingsModel"
     assert settings_schema['type'] == 'object'
@@ -138,6 +143,9 @@ def test_install_plugin_dependencies():
 
     # Install mock plugin
     p = Plugin(mock_plugin_path)
+
+    # Dependencies are installed on plugin activation
+    p.activate()
 
     # pip-install-test should have been installed
     result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE)
