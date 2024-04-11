@@ -106,7 +106,9 @@ export class CustomCatImage extends Stack {
 
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
       customQdrantContainerImage: qdrantImage,
-      customCatContainerImage: catImage
+      customCatContainerImage: catImage,
+      // Disable catPluginFolderInEFS to include local plugins
+      catPluginFolderInEFS: false
     });
 
     new CfnOutput(this, "CatHost", {
@@ -294,3 +296,87 @@ new DomainCat(app, 'domain-cat', { env: { account: '000000000000', region: 'eu-c
 ```
 
 See these example CDK apps [here](./examples).
+
+## Way of Work
+
+### Release once and install plugins manually
+
+By default the EFS is mounted in the folder containing the cat's plugins in order to make them persistent. If you want to manually load the plugins from the cat's admin panel, just release CdkCheshireCat with the default configuration:
+
+```ts
+import { CfnOutput, Stack, StackProps, App } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { CdkCheshireCat } from 'cdk-cheshire-cat';
+
+export class DefaultCat extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
+
+    const cheshireCat = new CdkCheshireCat(this, 'CheshireCat');
+
+    new CfnOutput(this, "CatHost", {
+      value: cheshireCat.catEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
+    });
+    new CfnOutput(this, "QdrantHost", {
+      value: cheshireCat.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
+    });
+  }
+}
+
+const app = new App();
+new DefaultCat(app, 'default');
+```
+
+![Upload plugin admin](image/README/upload-plugin-admin.png)
+
+The plugins will be persisted even if the cluster service tasks are restarted.
+
+### Keep plugins in the codebase
+
+If you want to keep your plugins within your codebase and deploy them along with the cat then you can use this setup:
+
+> **CAUTION**
+> Plugins loaded manually from the cat's admin panel WILL NOT BE PERSISTED.
+
+```typescript
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { CdkCheshireCat } from 'cdk-cheshire-cat';
+import * as ecs from 'aws-cdk-lib/aws-ecs'
+import * as cdk from 'aws-cdk-lib'
+import * as path from 'path'
+
+export class CustomCatImage extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
+  
+    const qdrantImage = ecs.ContainerImage.fromRegistry('qdrant/qdrant:v1.7.2');
+    // You have to link the Dockerfile folder, for example ./core with local custom plugins installed
+    const catImage = ecs.ContainerImage.fromAsset(path.resolve(__dirname, 'core'));
+
+    const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
+      customQdrantContainerImage: qdrantImage,
+      customCatContainerImage: catImage
+      // Disable catPluginFolderInEFS to include local plugins
+      catPluginFolderInEFS: false
+    });
+
+    new CfnOutput(this, "CatHost", {
+      value: cheshireCat.catEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
+    });
+    new CfnOutput(this, "QdrantHost", {
+      value: cheshireCat.qdrantEcsCluster.fargateService.loadBalancer.loadBalancerDnsName,
+    });
+  }
+}
+
+const app = new cdk.App();
+new CustomCatImage(app, 'custom-cat-image');
+```
+
+After deployment you will have to manually enable the plugins from the cat admin panel:
+
+![Upload plugin admin](image/README/enable-plugin-admin.png)
+
+The plugin will be persisted even if the cluster service tasks are restarted.
+However, plugins loaded manually from the cat's admin panel WILL NOT BE PERSISTED.

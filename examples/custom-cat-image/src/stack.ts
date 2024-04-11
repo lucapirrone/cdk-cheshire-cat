@@ -14,8 +14,8 @@ export class CustomCatImage extends Stack {
     const cheshireCat = new CdkCheshireCat(this, 'CheshireCat', {
       customQdrantContainerImage: qdrantImage,
       customCatContainerImage: catImage,
-      // Disable plugins persistence to include local plugins
-      persistCatPlugins: false
+      // Disable catPluginFolderInEFS to include local plugins
+      catPluginFolderInEFS: false
     });
 
     new CfnOutput(this, "CatHost", {

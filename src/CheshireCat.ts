@@ -42,11 +42,11 @@ interface CdkCheshireCatProps {
      */
   readonly customCatContainerImage?: ecs.ContainerImage;
   /**
-     * Persist cat plugins.
-     * Enabling it will ignore the plugins inserted into the docker image
+     * Cat Plugin folder in EFS.
+     * Enabling it will ignore the plugins inserted into the docker image but persists plugins uploaded from admin panel.
      * Default: true
      */
-  readonly persistCatPlugins?: boolean;
+  readonly catPluginFolderInEFS?: boolean;
   /**
      * Override props for every construct.
      */
@@ -62,7 +62,7 @@ class CdkCheshireCat extends Construct {
   public vpc: ec2.IVpc;
   public domain?: Domain;
 
-  constructor(scope: Construct, id: string, { persistCatPlugins = true, ...props }: CdkCheshireCatProps = {}) {
+  constructor(scope: Construct, id: string, { catPluginFolderInEFS = true, ...props }: CdkCheshireCatProps = {}) {
     super(scope, id);
     this.props = props;
 
@@ -104,7 +104,7 @@ class CdkCheshireCat extends Construct {
     this.catEcsCluster = new CatEcsCluster(this, 'CatEcsCluster', {
       efs: this.fileSystem,
       vpc: this.vpc,
-      fileSystemMountPointPath: persistCatPlugins ? '/app/cat/plugins' : '/mnt/efs/fs1',
+      fileSystemMountPointPath: catPluginFolderInEFS ? '/app/cat/plugins' : '/mnt/efs/fs1',
       customCatContainerImage: props.customCatContainerImage,
       qdrantEcsCluster: this.qdrantEcsCluster,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
