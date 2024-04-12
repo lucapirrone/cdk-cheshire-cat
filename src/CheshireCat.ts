@@ -1,5 +1,5 @@
-import * as path from 'path';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as efs from 'aws-cdk-lib/aws-efs';
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
@@ -34,6 +34,20 @@ interface CdkCheshireCatProps {
    */
   readonly catApiKeySecret?: sm.ISecret;
   /**
+     * Custom Qdrant container docker image.
+     */
+  readonly customQdrantContainerImage?: ecs.ContainerImage;
+  /**
+     * Custom Cat container docker image.
+     */
+  readonly customCatContainerImage?: ecs.ContainerImage;
+  /**
+     * Cat Plugin folder in EFS.
+     * Enabling it will ignore the plugins inserted into the docker image but persists plugins uploaded from admin panel.
+     * Default: true
+     */
+  readonly catPluginFolderInEFS?: boolean;
+  /**
      * Override props for every construct.
      */
   readonly overrides?: CdkCheshireCatOverrides;
@@ -48,7 +62,7 @@ class CdkCheshireCat extends Construct {
   public vpc: ec2.IVpc;
   public domain?: Domain;
 
-  constructor(scope: Construct, id: string, props: CdkCheshireCatProps = {}) {
+  constructor(scope: Construct, id: string, { catPluginFolderInEFS = true, ...props }: CdkCheshireCatProps = {}) {
     super(scope, id);
     this.props = props;
 
@@ -81,7 +95,7 @@ class CdkCheshireCat extends Construct {
       efs: this.fileSystem,
       vpc: this.vpc,
       fileSystemMountPointPath: '/mnt/efs/fs1',
-      qdrantDockerImagePath: path.resolve(__dirname, './docker-images/qdrant'),
+      customQdrantContainerImage: props.customQdrantContainerImage,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
       qdrantDomain: this.domain?.qdrantDomain,
       overrides: props.overrides?.qdrantEcsCluster,
@@ -90,8 +104,8 @@ class CdkCheshireCat extends Construct {
     this.catEcsCluster = new CatEcsCluster(this, 'CatEcsCluster', {
       efs: this.fileSystem,
       vpc: this.vpc,
-      fileSystemMountPointPath: '/mnt/efs/fs1',
-      catDockerImagePath: path.resolve(__dirname, './docker-images/cheshire-cat'),
+      fileSystemMountPointPath: catPluginFolderInEFS ? '/app/cat/plugins' : '/mnt/efs/fs1',
+      customCatContainerImage: props.customCatContainerImage,
       qdrantEcsCluster: this.qdrantEcsCluster,
       qdrantApiKeySecret: props.qdrantApiKeySecret,
       catApiKeySecret: props.catApiKeySecret,
